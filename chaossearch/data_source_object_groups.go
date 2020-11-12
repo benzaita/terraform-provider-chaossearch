@@ -41,6 +41,8 @@ func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m i
 
 	config := client.NewConfiguration()
 	config.URL = "https://klarna-eu-staging.chaossearch.io"
+	config.AccessKeyID = "foo"
+	config.SecretAccessKey = "foo"
 
 	client := client.NewClient(config)
 
