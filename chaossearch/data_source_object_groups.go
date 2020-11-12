@@ -3,7 +3,7 @@ package chaossearch
 import (
 	"context"
 	"strconv"
-	"terraform-provider-chaossearch/chaossearch/openapi"
+	"terraform-provider-chaossearch/chaossearch/client"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -38,14 +38,13 @@ func dataSourceObjectGroups() *schema.Resource {
 
 func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// client := &http.Client{Timeout: 10 * time.Second}
-	config := openapi.NewConfiguration()
-	config.Servers = openapi.ServerConfigurations{
-		{
-			URL: "https://klarna-eu-staging.chaossearch.io",
-		},
-	}
-	client := openapi.NewAPIClient(config)
-	_, _, err := client.DefaultApi.V1GetExecute(client.DefaultApi.V1Get(context.Background()))
+
+	config := client.NewConfiguration()
+	config.URL = "https://klarna-eu-staging.chaossearch.io"
+
+	client := client.NewClient(config)
+
+	result, err := client.ListBuckets(context.Background())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,12 +64,8 @@ func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m i
 	// defer r.Body.Close()
 
 	// objectGroups := make([]map[string]interface{}, 1)
-	objectGroups := [1]map[string]interface{}{
-		{
-			"id":   123,
-			"name": "bar",
-		},
-	}
+	objectGroups := result
+
 	// err = json.NewDecoder(r.Body).Decode(&coffees)
 	// if err != nil {
 	//   return diag.FromErr(err)
