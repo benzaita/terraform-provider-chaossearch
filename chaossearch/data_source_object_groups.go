@@ -2,9 +2,7 @@ package chaossearch
 
 import (
 	"context"
-	"os"
 	"strconv"
-	"terraform-provider-chaossearch/chaossearch/client"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,17 +35,12 @@ func dataSourceObjectGroups() *schema.Resource {
 	}
 }
 
-func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// client := &http.Client{Timeout: 10 * time.Second}
 
-	config := client.NewConfiguration()
-	config.URL = os.Getenv("CHAOSSEARCH_URL")
-	config.AccessKeyID = os.Getenv("CHAOSSEARCH_ACCESS_KEY_ID")
-	config.SecretAccessKey = os.Getenv("CHAOSSEARCH_SECRET_ACCESS_KEY")
+	client := meta.(*ProviderMeta).Client
 
-	client := client.NewClient(config)
-
-	clientResponse, err := client.ListBuckets(context.Background())
+	clientResponse, err := client.ListBuckets(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -82,12 +75,12 @@ func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m i
 	//   return diag.FromErr(err)
 	// }
 
-	if err := d.Set("object_groups", objectGroups); err != nil {
+	if err := data.Set("object_groups", objectGroups); err != nil {
 		return diag.FromErr(err)
 	}
 
 	// always run
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return diags
 }

@@ -8,6 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type ProviderMeta struct {
+	Client *client.Client
+}
+
 // Provider -
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -56,7 +60,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	config.AccessKeyID = accessKeyID
 	config.SecretAccessKey = secretAccessKey
 
-	client := client.NewClient(config)
+	csClient := client.NewClient(config)
 
-	return client, nil
+	providerMeta := &ProviderMeta{
+		Client: csClient,
+	}
+	return providerMeta, nil
 }
