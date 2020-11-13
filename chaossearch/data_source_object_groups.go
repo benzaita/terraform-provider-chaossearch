@@ -20,7 +20,7 @@ func dataSourceObjectGroups() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"name": {
@@ -46,9 +46,17 @@ func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m i
 
 	client := client.NewClient(config)
 
-	result, err := client.ListBuckets(context.Background())
+	clientResponse, err := client.ListBuckets(context.Background())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
+	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
+		result[i] = map[string]interface{}{
+			"id":   clientResponse.BucketsCollection.Buckets[i].Name,
+			"name": clientResponse.BucketsCollection.Buckets[i].Name,
+		}
 	}
 
 	// Warning or errors can be collected in a slice type

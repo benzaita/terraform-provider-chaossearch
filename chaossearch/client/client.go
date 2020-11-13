@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,7 +24,7 @@ func NewClient(config *Configuration) *Client {
 	}
 }
 
-func (client *Client) ListBuckets(ctx context.Context) ([]map[string]interface{}, error) {
+func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponseModel, error) {
 	url := fmt.Sprintf("%s/V1/", client.config.URL)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -52,13 +53,23 @@ func (client *Client) ListBuckets(ctx context.Context) ([]map[string]interface{}
 		return nil, err
 	}
 
-	fmt.Printf("Body: %v", body)
-	result := []map[string]interface{}{
-		{
-			"name": "foo",
-			"id":   123,
-		},
+	var responseModel ListBucketsResponseModel
+	if err := xml.Unmarshal(body, &responseModel); err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	return &responseModel, nil
+}
+
+type ListBucketsResponseModel struct {
+	BucketsCollection BucketCollectionModel `xml:"Buckets"`
+}
+
+type BucketCollectionModel struct {
+	Buckets []BucketModel `xml:"Bucket"`
+}
+
+type BucketModel struct {
+	Name         string `xml:"Name"`
+	CreationDate string `xml:"CreationDate"`
 }
