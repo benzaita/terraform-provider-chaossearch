@@ -6,3 +6,5 @@ TODO:
 
  - [x] Test with real credentials
  - [x] Parse XML response
+ - [ ] Provide authentication in the "provider" block in the Terraform manifest ([how to](https://learn.hashicorp.com/tutorials/terraform/provider-auth?in=terraform/providers))
+ - [ ] Implement [create Bucket](https://learn.hashicorp.com/tutorials/terraform/provider-create?in=terraform/providers)

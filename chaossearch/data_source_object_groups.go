@@ -2,6 +2,7 @@ package chaossearch
 
 import (
 	"context"
+	"os"
 	"strconv"
 	"terraform-provider-chaossearch/chaossearch/client"
 	"time"
@@ -40,9 +41,9 @@ func dataSourceObjectGroupsRead(ctx context.Context, d *schema.ResourceData, m i
 	// client := &http.Client{Timeout: 10 * time.Second}
 
 	config := client.NewConfiguration()
-	config.URL = "https://klarna-eu-staging.chaossearch.io"
-	config.AccessKeyID = "foo"
-	config.SecretAccessKey = "foo"
+	config.URL = os.Getenv("CHAOSSEARCH_URL")
+	config.AccessKeyID = os.Getenv("CHAOSSEARCH_ACCESS_KEY_ID")
+	config.SecretAccessKey = os.Getenv("CHAOSSEARCH_SECRET_ACCESS_KEY")
 
 	client := client.NewClient(config)
 

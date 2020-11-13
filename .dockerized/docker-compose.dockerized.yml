@@ -13,6 +13,10 @@ services:
     entrypoint:
       - sh
       - '-c'
+    environment:
+      - CHAOSSEARCH_URL
+      - CHAOSSEARCH_ACCESS_KEY_ID
+      - CHAOSSEARCH_SECRET_ACCESS_KEY
     volumes:
       - gopath-cache:/go
       - terraform-dir:/root/.terraform.d
