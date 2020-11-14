@@ -1,9 +1,10 @@
 package client
 
 import (
-	"context"
+	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -24,52 +25,47 @@ func NewClient(config *Configuration) *Client {
 	}
 }
 
-func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponseModel, error) {
-	url := fmt.Sprintf("%s/V1/", client.config.URL)
-
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
+func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+	var bodyReader io.ReadSeeker
+	if bodyAsBytes == nil {
+		bodyReader = nil
+	} else {
+		bodyReader = bytes.NewReader(bodyAsBytes)
 	}
 
 	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, "")
-	_, err = v4.NewSigner(credentials).Sign(req, nil, client.config.AWSServiceName, client.config.AWSRegion, time.Now())
+	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.AWSRegion, time.Now())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to sign request: %s", err)
 	}
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to execute request: %s", err)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("Got a %d response from %s for request %+v", resp.StatusCode, url, req)
+		respAsBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read response body: %s", err)
+		}
+		return nil, fmt.Errorf(
+			"Expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
+			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	return resp, nil
+}
+
+func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
+	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("Failed to read body: %s", err)
 	}
 
-	var responseModel ListBucketsResponseModel
-	if err := xml.Unmarshal(body, &responseModel); err != nil {
-		return nil, err
+	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
+		return fmt.Errorf("Failed to unmarshal XML: %s", err)
 	}
 
-	return &responseModel, nil
-}
-
-type ListBucketsResponseModel struct {
-	BucketsCollection BucketCollectionModel `xml:"Buckets"`
-}
-
-type BucketCollectionModel struct {
-	Buckets []BucketModel `xml:"Bucket"`
-}
-
-type BucketModel struct {
-	Name         string `xml:"Name"`
-	CreationDate string `xml:"CreationDate"`
+	return nil
 }

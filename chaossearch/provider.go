@@ -2,6 +2,8 @@ package chaossearch
 
 import (
 	"context"
+	"log"
+	"os"
 	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,7 +34,9 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_SECRET_ACCESS_KEY", ""),
 			},
 		},
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"chaossearch_object_group": resourceObjectGroup(),
+		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"chaossearch_object_groups": dataSourceObjectGroups(),
 		},
@@ -62,8 +66,25 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	csClient := client.NewClient(config)
 
+	logFile, err := os.Create("terraform-provider-chaossearch.log")
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	log.SetOutput(logFile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	// Close logFile when context is closed
+	go func() {
+		<-context.Background().Done()
+		log.Println("END")
+		logFile.Sync()
+		logFile.Close()
+	}()
+
 	providerMeta := &ProviderMeta{
 		Client: csClient,
 	}
+
+	log.Println("START")
 	return providerMeta, nil
 }

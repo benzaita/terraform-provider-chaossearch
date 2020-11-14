@@ -9,6 +9,17 @@ terraform {
 
 provider "chaossearch" {}
 
+resource "chaossearch_object_group" "itamar_test" {
+  name = "itamar-test"
+  source_bucket = "foo"
+  daily_interval = true
+  compression = "GZIP"
+}
+
+output "itamar_test" {
+  value = chaossearch_object_group.itamar_test
+}
+
 data "chaossearch_object_groups" "all" {}
 
 output "all_object_groups" {
