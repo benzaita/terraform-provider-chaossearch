@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -29,7 +30,7 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 
 	var resp ReadObjectGroupResponse
 	if err := unmarshalReadObjectGroupResponse(httpResp.Body, &resp); err != nil {
-		return nil, fmt.Errorf("Failed unmarshal XML response body: %s", err)
+		return nil, fmt.Errorf("Failed to unmarshal XML response body: %s", err)
 	}
 
 	log.Printf("ReadObjectGroupResponse: %+v", resp)
@@ -61,11 +62,28 @@ func unmarshalReadObjectGroupResponse(bodyReader io.Reader, v *ReadObjectGroupRe
 
 	log.Printf("objectGroupTagging: %+v", tagging)
 
-	if err := readStringTagValue(&tagging, "cs3.compression", &v.Compression); err != nil {
+	if err := readStringTagValue(&tagging, "cs3.parent", &v.SourceBucket); err != nil {
 		return err
 	}
 
-	return nil
+	if err := readStringTagValue(&tagging, "cs3.compression", &v.Options.Compression); err != nil {
+		return err
+	}
+
+	if err := readStringTagValue(&tagging, "cs3.live-sqs-arn", &v.LiveEventsSqsArn); err != nil {
+		return err
+	}
+
+	if err := readJSONTagValue(&tagging, "cs3.dataset-format", &v.Format); err != nil {
+		return err
+	}
+
+	v.Format.Horizontal = false       // TODO where from?
+	v.DailyInterval = false           // TODO where from?
+	v.IndexRetention = -1             // TODO where from?
+	v.Options.IgnoreIrregular = false // TODO where from?
+	v.PartitionBy = ""                // TODO where from?
+	return fmt.Errorf("Not implemented yet")
 }
 
 func readStringTagValue(tagging *objectGroupTagging, key string, v *string) error {
@@ -76,6 +94,15 @@ func readStringTagValue(tagging *objectGroupTagging, key string, v *string) erro
 
 	*v = stringValue
 	return nil
+}
+
+func readJSONTagValue(tagging *objectGroupTagging, key string, v interface{}) error {
+	valueAsBytes, err := findTagValue(tagging, key)
+	if err != nil {
+		return nil
+	}
+
+	return json.Unmarshal([]byte(valueAsBytes), v)
 }
 
 func findTagValue(tagging *objectGroupTagging, key string) (string, error) {

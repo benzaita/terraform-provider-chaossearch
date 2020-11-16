@@ -84,6 +84,7 @@ func resourceObjectGroup() *schema.Resource {
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
+	diags := diag.Diagnostics{}
 
 	request := &client.CreateObjectGroupRequest{
 		Name:         data.Get("name").(string),
@@ -102,43 +103,41 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
 		PartitionBy:      data.Get("partition_by").(string),
 	}
-	// request.Filter, err = mapFilterDataToRequest(data.Get("filter").(map[string]interface{}))
 
 	err := c.CreateObjectGroup(ctx, request)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("name").(string)) //TODO remove
+	data.SetId(data.Get("name").(string))
 
-	return resourceObjectGroupRead(ctx, data, meta)
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Not reading object group resource",
+		Detail: `
+		It is recommended to read the object group resource to verify that
+		the attributesd were indeed set.
+		However, the read operation is not implemented.
+		`,
+	})
+
+	return diags
 }
 
-// func mapFilterDataToRequest(filterData map[string]interface{}) (client.ObjectGroupFilter, error) {
-// operator := filterData
-// }
-
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	diags := diag.Diagnostics{}
 
-	req := &client.ReadObjectGroupRequest{
-		Name: data.Get("name").(string),
-	}
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "client.ReadObjectGroup() is not implemented yet. Skipping",
+	})
 
-	resp, err := c.ReadObjectGroup(ctx, req)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := data.Set("compression", resp.Compression); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return diags
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
+	diags := diag.Diagnostics{}
 
 	req := &client.UpdateObjectGroupRequest{
 		Name:           data.Get("name").(string),
@@ -150,7 +149,17 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return resourceObjectGroupRead(ctx, data, meta)
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Not reading object group resource",
+		Detail: `
+		It is recommended to read the object group resource to verify that
+		the attributesd were indeed set.
+		However, the read operation is not implemented.
+		`,
+	})
+
+	return diags
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -18,7 +18,18 @@ type ReadObjectGroupRequest struct {
 }
 
 type ReadObjectGroupResponse struct {
-	Compression string
+	SourceBucket string
+	Format       struct {
+		Type        string `json:"_type"`
+		Horizontal  bool
+		StripPrefix bool `json:"stripPrefix"`
+	}
+	IndexRetention   int
+	Filter           ObjectGroupFilter
+	Options          ObjectGroupOptions
+	DailyInterval    bool
+	LiveEventsSqsArn string
+	PartitionBy      string
 }
 
 type CreateObjectGroupRequest struct {
