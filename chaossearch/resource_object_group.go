@@ -19,26 +19,31 @@ func resourceObjectGroup() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"source_bucket": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"logs_type": {
 				Type:     schema.TypeString,
 				Default:  "JSON",
 				Optional: true,
+				ForceNew: true,
 				// TODO add validation
 			},
 			"horizontal": {
 				Type:     schema.TypeBool,
 				Default:  true,
 				Optional: true,
+				ForceNew: true,
 			},
 			"strip_prefix": {
 				Type:     schema.TypeBool,
 				Default:  true,
 				Optional: true,
+				ForceNew: true,
 			},
 			"index_retention": {
 				Type:     schema.TypeInt,
@@ -49,25 +54,30 @@ func resourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
+				ForceNew: true,
 			},
 			"compression": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 				// TODO add validation
 			},
 			"daily_interval": {
 				Type:     schema.TypeBool,
 				Required: true,
+				ForceNew: true,
 			},
 			"live_events_sqs_arn": {
 				Type:     schema.TypeString,
 				Default:  "",
 				Optional: true,
+				ForceNew: true,
 			},
 			"partition_by": {
 				Type:     schema.TypeString,
 				Default:  "",
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
