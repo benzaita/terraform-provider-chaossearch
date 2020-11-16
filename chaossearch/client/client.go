@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -39,10 +40,14 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 		return nil, fmt.Errorf("Failed to sign request: %s", err)
 	}
 
+	log.Printf("Sending request:\nMethod: %s\nURL: %s\nBody: %s", req.Method, req.URL, bodyAsBytes)
+
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to execute request: %s", err)
 	}
+
+	log.Printf("Got response:\nStatus code: %d", resp.StatusCode)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respAsBytes, err := ioutil.ReadAll(resp.Body)

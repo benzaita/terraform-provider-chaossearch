@@ -2,7 +2,6 @@ package chaossearch
 
 import (
 	"context"
-	"log"
 	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -105,14 +104,12 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 	// request.Filter, err = mapFilterDataToRequest(data.Get("filter").(map[string]interface{}))
 
-	log.Printf("CreateObjectGroupRequest: %+v\n", request)
-
 	err := c.CreateObjectGroup(ctx, request)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("name").(string))
+	data.SetId(data.Get("name").(string)) //TODO remove
 
 	return resourceObjectGroupRead(ctx, data, meta)
 }
@@ -122,35 +119,38 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 // }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).Client
 
-	log.Printf("ListBucketsRequest: {}\n")
+	req := &client.ReadObjectGroupRequest{
+		Name: data.Get("name").(string),
+	}
 
-	clientResponse, err := client.ListBuckets(ctx)
+	resp, err := c.ReadObjectGroup(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	log.Printf("ListBucketsResponse: %+v\n", clientResponse)
-	found := false
-	for _, bucket := range clientResponse.BucketsCollection.Buckets {
-		if bucket.Name == data.Id() {
-			if err := data.Set("name", bucket.Name); err != nil {
-				return diag.FromErr(err)
-			}
-			found = true
-		}
-	}
-
-	if !found {
-		return diag.Errorf("Cannot find Bucket with ID '%v'", data.Id())
+	if err := data.Set("compression", resp.Compression); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Not implemented")
+	c := meta.(*ProviderMeta).Client
+
+	req := &client.UpdateObjectGroupRequest{
+		Name:           data.Get("name").(string),
+		IndexRetention: data.Get("index_retention").(int),
+	}
+
+	err := c.UpdateObjectGroup(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceObjectGroupRead(ctx, data, meta)
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

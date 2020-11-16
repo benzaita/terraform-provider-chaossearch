@@ -13,6 +13,14 @@ type ListBucketsResponse struct {
 	BucketsCollection BucketCollection `xml:"Buckets"`
 }
 
+type ReadObjectGroupRequest struct {
+	Name string
+}
+
+type ReadObjectGroupResponse struct {
+	Compression string
+}
+
 type CreateObjectGroupRequest struct {
 	Name             string
 	SourceBucket     string
@@ -27,6 +35,11 @@ type CreateObjectGroupRequest struct {
 
 type DeleteObjectGroupRequest struct {
 	Name string
+}
+
+type UpdateObjectGroupRequest struct {
+	Name           string
+	IndexRetention int
 }
 
 type ObjectGroupFormat struct {
