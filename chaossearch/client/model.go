@@ -25,6 +25,10 @@ type CreateObjectGroupRequest struct {
 	PartitionBy      string
 }
 
+type DeleteObjectGroupRequest struct {
+	Name string
+}
+
 type ObjectGroupFormat struct {
 	Type        string
 	Horizontal  bool

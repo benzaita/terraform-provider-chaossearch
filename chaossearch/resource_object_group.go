@@ -140,12 +140,20 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return resourceObjectGroupRead(ctx, data, meta)
+	return diag.Errorf("Not implemented")
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
+	c := meta.(*ProviderMeta).Client
 
-	return diags
+	req := &client.DeleteObjectGroupRequest{
+		Name: data.Get("name").(string),
+	}
+
+	err := c.DeleteObjectGroup(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
