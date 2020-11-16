@@ -40,7 +40,7 @@ func resourceObjectGroup() *schema.Resource {
 				Default:  true,
 				Optional: true,
 			},
-			"retention_days": {
+			"index_retention": {
 				Type:     schema.TypeInt,
 				Default:  -1,
 				Optional: true,
@@ -84,7 +84,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			Horizontal:  data.Get("horizontal").(bool),
 			StripPrefix: data.Get("strip_prefix").(bool),
 		},
-		RetentionDays: data.Get("retention_days").(int),
+		IndexRetention: data.Get("index_retention").(int),
 		Options: client.ObjectGroupOptions{
 			IgnoreIrregular: data.Get("ignore_irregular").(bool),
 			Compression:     data.Get("compression").(string),

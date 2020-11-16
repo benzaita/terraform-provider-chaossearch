@@ -17,7 +17,7 @@ type CreateObjectGroupRequest struct {
 	Name             string
 	SourceBucket     string
 	Format           ObjectGroupFormat
-	RetentionDays    int
+	IndexRetention   int
 	Filter           ObjectGroupFilter
 	Options          ObjectGroupOptions
 	DailyInterval    bool
