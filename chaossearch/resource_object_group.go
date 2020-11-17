@@ -17,6 +17,9 @@ func resourceObjectGroup() *schema.Resource {
 		ReadContext:   resourceObjectGroupRead,
 		UpdateContext: resourceObjectGroupUpdate,
 		DeleteContext: resourceObjectGroupDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -109,12 +112,15 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		return diag.Errorf("Failed to read object group: ", err)
 	}
 
-	log.Printf("WARNING - not reading PartitionBy")
+	data.Set("name", data.Id())
 	data.Set("filter_json", resp.FilterJSON)
 	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("compression", resp.Compression)
+
+	log.Printf("WARNING - not reading PartitionBy")
 	// data.Set("partition_by", resp.PartitionBy)
+
 	data.Set("source_bucket", resp.SourceBucket)
 
 	return diags

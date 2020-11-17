@@ -72,7 +72,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	}
 	v.Format = filterObject.Type
 
-	if err := readJSONTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
+	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
 	}
 
