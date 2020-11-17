@@ -2,12 +2,13 @@ package chaossearch
 
 import (
 	"context"
-	"terraform-provider-chaossearch/chaossearch/client"
-
 	"log"
+	"regexp"
+	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceObjectGroup() *schema.Resource {
@@ -27,58 +28,46 @@ func resourceObjectGroup() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"logs_type": {
-				Type:     schema.TypeString,
-				Default:  "JSON",
-				Optional: true,
-				ForceNew: true,
-				// TODO add validation
+			"format": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"json"}, true),
 			},
-			"horizontal": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
-				ForceNew: true,
-			},
-			"strip_prefix": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
-				ForceNew: true,
-			},
-			"index_retention": {
-				Type:     schema.TypeInt,
-				Default:  -1,
-				Optional: true,
-			},
-			"ignore_irregular": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
-				ForceNew: true,
+			"filter_json": {
+				Type:         schema.TypeString,
+				Default:      `[{"field":"key","regex":".*"}]`,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsJSON,
 			},
 			"compression": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-				// TODO add validation
-			},
-			"daily_interval": {
-				Type:     schema.TypeBool,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "",
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"", "gzip", "zlib", "snappy"}, true),
 			},
 			"live_events_sqs_arn": {
-				Type:     schema.TypeString,
-				Default:  "",
-				Optional: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Default:      "",
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^arn:aws:sqs:.*`), `must be an SQS ARN: "arn:aws:sqs:..."`),
 			},
 			"partition_by": {
+				Type:         schema.TypeString,
+				Default:      "",
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
+			},
+
+			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
+			"description": {
 				Type:     schema.TypeString,
-				Default:  "",
 				Optional: true,
-				ForceNew: true,
+				Default:  "",
 			},
 		},
 	}
@@ -88,19 +77,11 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	c := meta.(*ProviderMeta).Client
 
 	request := &client.CreateObjectGroupRequest{
-		Name:         data.Get("name").(string),
-		SourceBucket: data.Get("source_bucket").(string),
-		Format: client.ObjectGroupFormat{
-			Type:        data.Get("logs_type").(string),
-			Horizontal:  data.Get("horizontal").(bool),
-			StripPrefix: data.Get("strip_prefix").(bool),
-		},
-		IndexRetention: data.Get("index_retention").(int),
-		Options: client.ObjectGroupOptions{
-			IgnoreIrregular: data.Get("ignore_irregular").(bool),
-			Compression:     data.Get("compression").(string),
-		},
-		DailyInterval:    data.Get("daily_interval").(bool),
+		Name:             data.Get("name").(string),
+		SourceBucket:     data.Get("source_bucket").(string),
+		FilterJSON:       data.Get("filter_json").(string),
+		Format:           data.Get("format").(string),
+		Compression:      data.Get("compression").(string),
 		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
 		PartitionBy:      data.Get("partition_by").(string),
 	}
@@ -120,7 +101,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	c := meta.(*ProviderMeta).Client
 
 	req := &client.ReadObjectGroupRequest{
-		Id: data.Id(),
+		ID: data.Id(),
 	}
 
 	resp, err := c.ReadObjectGroup(ctx, req)
@@ -128,15 +109,11 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		return diag.Errorf("Failed to read object group: ", err)
 	}
 
-	log.Printf("WARNING - not reading Horizontal, DailyInterval, IndexRetention, IgnoreIrregular, PartitionBy")
-	// data.Set("daily_interval", resp.DailyInterval)
-	// data.Set("horizontal", resp.Format.Horizontal)
-	data.Set("strip_prefix", resp.Format.StripPrefix)
-	data.Set("logs_type", resp.Format.Type)
-	// data.Set("index_retention", resp.IndexRetention)
+	log.Printf("WARNING - not reading PartitionBy")
+	data.Set("filter_json", resp.FilterJSON)
+	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	data.Set("compression", resp.Options.Compression)
-	// data.Set("ignore_irregular", resp.Options.IgnoreIrregular)
+	data.Set("compression", resp.Compression)
 	// data.Set("partition_by", resp.PartitionBy)
 	data.Set("source_bucket", resp.SourceBucket)
 

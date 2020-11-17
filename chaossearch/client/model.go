@@ -14,34 +14,26 @@ type ListBucketsResponse struct {
 }
 
 type ReadObjectGroupRequest struct {
-	Id string
+	ID string
 }
 
 type ReadObjectGroupResponse struct {
-	SourceBucket string
-	Format       struct {
-		Type        string `json:"_type"`
-		Horizontal  bool
-		StripPrefix bool `json:"stripPrefix"`
-	}
-	IndexRetention   int
-	Filter           ObjectGroupFilter
-	Options          ObjectGroupOptions
-	DailyInterval    bool
+	Compression      string
+	FilterJSON       string
+	Format           string
 	LiveEventsSqsArn string
 	PartitionBy      string
+	SourceBucket     string
 }
 
 type CreateObjectGroupRequest struct {
 	Name             string
-	SourceBucket     string
-	Format           ObjectGroupFormat
-	IndexRetention   int
-	Filter           ObjectGroupFilter
-	Options          ObjectGroupOptions
-	DailyInterval    bool
+	Compression      string
+	FilterJSON       string
+	Format           string
 	LiveEventsSqsArn string
 	PartitionBy      string
+	SourceBucket     string
 }
 
 type DeleteObjectGroupRequest struct {
@@ -51,26 +43,4 @@ type DeleteObjectGroupRequest struct {
 type UpdateObjectGroupRequest struct {
 	Name           string
 	IndexRetention int
-}
-
-type ObjectGroupFormat struct {
-	Type        string
-	Horizontal  bool
-	StripPrefix bool
-}
-
-type ObjectGroupFilter struct {
-	Operator string
-	Operands []ObjectGroupFieldFilter
-}
-
-type ObjectGroupFieldFilter struct {
-	FieldName   string
-	ValuePrefix string
-	ValueRegex  string
-}
-
-type ObjectGroupOptions struct {
-	IgnoreIrregular bool
-	Compression     string
 }

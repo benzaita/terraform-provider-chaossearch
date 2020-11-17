@@ -36,33 +36,31 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		"bucket": req.Name,
 		"source": req.SourceBucket,
 		"format": map[string]interface{}{
-			"_type":       req.Format.Type,
-			"horizontal":  req.Format.Horizontal,
-			"stripPrefix": req.Format.StripPrefix,
+			"_type":       req.Format,
+			"horizontal":  true,
+			"stripPrefix": true,
 		},
-		"indexRetention": req.IndexRetention,
+		"indexRetention": 14,
 		"options": map[string]interface{}{
-			"ignoreIrregular": req.Options.IgnoreIrregular,
-			"compression":     req.Options.Compression,
+			"ignoreIrregular": true,
 		},
-	}
-
-	// filterBody, err := mapObjectGroupFilterRequestToBody(&req.Filter)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	body["filter"] = []map[string]interface{}{
-		{
-			"field": "key",
-			"regex": ".*",
-		},
-	}
-
-	if req.DailyInterval {
-		body["interval"] = map[string]interface{}{
+		"interval": map[string]interface{}{
 			"mode":   0,
 			"column": 0,
+		},
+	}
+
+	if req.Compression != "" {
+		var options = body["options"].(map[string]interface{})
+		options["compression"] = req.Compression
+	}
+
+	if req.FilterJSON != "" {
+		filter := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(req.FilterJSON), &filter); err != nil {
+			return nil, fmt.Errorf("Failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
 		}
+		body["filter"] = filter
 	}
 
 	if req.LiveEventsSqsArn != "" {
@@ -79,27 +77,4 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 	}
 
 	return bodyAsBytes, nil
-}
-
-func mapObjectGroupFilterRequest(filter *ObjectGroupFilter) (map[string]interface{}, error) {
-	operandsListBody := make([]map[string]interface{}, len(filter.Operands))
-	for i, operand := range filter.Operands {
-		operandBody := make(map[string]interface{})
-		operandBody["field"] = operand.FieldName
-		if operand.ValuePrefix != "" && operand.ValueRegex != "" {
-			return nil, fmt.Errorf("Expected only one of ValuePrefix or ValueRegex to be defined, but both were defined in %+v", operand)
-		}
-		if operand.ValuePrefix != "" {
-			operandBody["prefix"] = operand.ValuePrefix
-		}
-		if operand.ValueRegex != "" {
-			operandBody["regex"] = operand.ValueRegex
-		}
-
-		operandsListBody[i] = operandBody
-	}
-
-	filterBody := make(map[string]interface{})
-	filterBody[filter.Operator] = operandsListBody
-	return filterBody, nil
 }

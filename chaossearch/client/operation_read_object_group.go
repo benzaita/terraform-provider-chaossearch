@@ -33,7 +33,7 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 
 	svc := s3.New(session)
 	input := &s3.GetBucketTaggingInput{
-		Bucket: aws.String(req.Id),
+		Bucket: aws.String(req.ID),
 	}
 
 	tagging, err := svc.GetBucketTaggingWithContext(ctx, input)
@@ -56,7 +56,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 
-	if err := readStringTagValue(tagging, "cs3.compression", &v.Options.Compression); err != nil {
+	if err := readStringTagValue(tagging, "cs3.compression", &v.Compression); err != nil {
 		return err
 	}
 
@@ -64,15 +64,19 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 
-	if err := readJSONTagValue(tagging, "cs3.dataset-format", &v.Format); err != nil {
+	var filterObject struct {
+		Type string `json:"_type"`
+	}
+	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
+		return err
+	}
+	v.Format = filterObject.Type
+
+	if err := readJSONTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
 	}
 
-	log.Printf("WARNING - not reading Horizontal, DailyInterval, IndexRetention, IgnoreIrregular, PartitionBy")
-	// v.Format.Horizontal = false       // TODO where from?
-	// v.DailyInterval = false           // TODO where from?
-	// v.IndexRetention = -1             // TODO where from?
-	// v.Options.IgnoreIrregular = false // TODO where from?
+	log.Printf("WARNING - not reading PartitionBy")
 	// v.PartitionBy = ""                // TODO where from?
 	// log.Fatalf("Not implemented yet")
 	return nil
