@@ -14,7 +14,7 @@ type ListBucketsResponse struct {
 }
 
 type ReadObjectGroupRequest struct {
-	Name string
+	Id string
 }
 
 type ReadObjectGroupResponse struct {

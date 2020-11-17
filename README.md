@@ -10,7 +10,6 @@ TODO:
  - [ ] Implement create for resource_object_group
      - [x] Implement basic attributes (no filter)
      - [ ] Implement filter in create request
- - [ ] Implement update for resource_object_group
- - [ ] Implement delete for resource_object_group
- - [ ] Switch back to staging URL and credentials
+ - [x] Implement update for resource_object_group
+ - [x] Implement delete for resource_object_group
  - [ ] 

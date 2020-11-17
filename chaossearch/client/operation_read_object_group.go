@@ -3,33 +3,46 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
+type appLogger struct{}
+
+func (l appLogger) Log(args ...interface{}) {
+	log.Printf("AWS: %+v", args...)
+}
+
 func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
-	method := "GET"
-	safeObjectGroupName := url.PathEscape(req.Name)
-	url := fmt.Sprintf("%s/V1/%s?tagging", client.config.URL, safeObjectGroupName)
-
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
+	session, err := session.NewSession(&aws.Config{
+		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
+		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
+		Region:           aws.String("eu-west-1"),
+		S3ForcePathStyle: aws.Bool(true),
+		LogLevel:         aws.LogLevel(aws.LogOff),
+		Logger:           appLogger{},
+	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create request: %s", err)
+		return nil, fmt.Errorf("Failed to create AWS session: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq, nil)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to %s to %s: %s", method, url, err)
+	svc := s3.New(session)
+	input := &s3.GetBucketTaggingInput{
+		Bucket: aws.String(req.Id),
 	}
-	defer httpResp.Body.Close()
+
+	tagging, err := svc.GetBucketTaggingWithContext(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read bucket tagging: %s", err)
+	}
 
 	var resp ReadObjectGroupResponse
-	if err := unmarshalReadObjectGroupResponse(httpResp.Body, &resp); err != nil {
+	if err := mapBucketTaggingToResponse(tagging, &resp); err != nil {
 		return nil, fmt.Errorf("Failed to unmarshal XML response body: %s", err)
 	}
 
@@ -38,55 +51,34 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 	return &resp, nil
 }
 
-type objectGroupTag struct {
-	Key   string `xml:"Key"`
-	Value string `xml:"Value"`
+func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjectGroupResponse) error {
+	if err := readStringTagValue(tagging, "cs3.parent", &v.SourceBucket); err != nil {
+		return err
+	}
+
+	if err := readStringTagValue(tagging, "cs3.compression", &v.Options.Compression); err != nil {
+		return err
+	}
+
+	if err := readStringTagValue(tagging, "cs3.live-sqs-arn", &v.LiveEventsSqsArn); err != nil {
+		return err
+	}
+
+	if err := readJSONTagValue(tagging, "cs3.dataset-format", &v.Format); err != nil {
+		return err
+	}
+
+	log.Printf("WARNING - not reading Horizontal, DailyInterval, IndexRetention, IgnoreIrregular, PartitionBy")
+	// v.Format.Horizontal = false       // TODO where from?
+	// v.DailyInterval = false           // TODO where from?
+	// v.IndexRetention = -1             // TODO where from?
+	// v.Options.IgnoreIrregular = false // TODO where from?
+	// v.PartitionBy = ""                // TODO where from?
+	// log.Fatalf("Not implemented yet")
+	return nil
 }
 
-type objectGroupTagging struct {
-	TagSet []objectGroupTag `xml:"TagSet>Tag"`
-}
-
-func unmarshalReadObjectGroupResponse(bodyReader io.Reader, v *ReadObjectGroupResponse) error {
-	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
-	if err != nil {
-		return fmt.Errorf("Failed to read body: %s", err)
-	}
-
-	log.Printf("bodyAsBytes: %s", bodyAsBytes)
-
-	var tagging objectGroupTagging
-	if err := xml.Unmarshal(bodyAsBytes, &tagging); err != nil {
-		return fmt.Errorf("Failed to unmarshal XML: %s", err)
-	}
-
-	log.Printf("objectGroupTagging: %+v", tagging)
-
-	if err := readStringTagValue(&tagging, "cs3.parent", &v.SourceBucket); err != nil {
-		return err
-	}
-
-	if err := readStringTagValue(&tagging, "cs3.compression", &v.Options.Compression); err != nil {
-		return err
-	}
-
-	if err := readStringTagValue(&tagging, "cs3.live-sqs-arn", &v.LiveEventsSqsArn); err != nil {
-		return err
-	}
-
-	if err := readJSONTagValue(&tagging, "cs3.dataset-format", &v.Format); err != nil {
-		return err
-	}
-
-	v.Format.Horizontal = false       // TODO where from?
-	v.DailyInterval = false           // TODO where from?
-	v.IndexRetention = -1             // TODO where from?
-	v.Options.IgnoreIrregular = false // TODO where from?
-	v.PartitionBy = ""                // TODO where from?
-	return fmt.Errorf("Not implemented yet")
-}
-
-func readStringTagValue(tagging *objectGroupTagging, key string, v *string) error {
+func readStringTagValue(tagging *s3.GetBucketTaggingOutput, key string, v *string) error {
 	stringValue, err := findTagValue(tagging, key)
 	if err != nil {
 		return nil
@@ -96,7 +88,7 @@ func readStringTagValue(tagging *objectGroupTagging, key string, v *string) erro
 	return nil
 }
 
-func readJSONTagValue(tagging *objectGroupTagging, key string, v interface{}) error {
+func readJSONTagValue(tagging *s3.GetBucketTaggingOutput, key string, v interface{}) error {
 	valueAsBytes, err := findTagValue(tagging, key)
 	if err != nil {
 		return nil
@@ -105,10 +97,10 @@ func readJSONTagValue(tagging *objectGroupTagging, key string, v interface{}) er
 	return json.Unmarshal([]byte(valueAsBytes), v)
 }
 
-func findTagValue(tagging *objectGroupTagging, key string) (string, error) {
+func findTagValue(tagging *s3.GetBucketTaggingOutput, key string) (string, error) {
 	for _, tag := range tagging.TagSet {
-		if tag.Key == key {
-			return tag.Value, nil
+		if *tag.Key == key {
+			return *tag.Value, nil
 		}
 	}
 
