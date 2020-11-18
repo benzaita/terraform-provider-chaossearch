@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -17,12 +18,20 @@ import (
 type Client struct {
 	config     *Configuration
 	httpClient *http.Client
+	userAgent  string
 }
 
 func NewClient(config *Configuration) *Client {
+	binaryName := os.Getenv("BINARY")
+	hostName := os.Getenv("HOSTNAME")
+	version := os.Getenv("VERSION")
+	namespace := os.Getenv("NAMESPACE")
+	userAgent := fmt.Sprintf("%s/%s %s/%s/%s", binaryName, version, hostName, namespace, binaryName)
+
 	return &Client{
 		config:     config,
 		httpClient: http.DefaultClient,
+		userAgent:  userAgent,
 	}
 }
 
@@ -33,6 +42,8 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 	} else {
 		bodyReader = bytes.NewReader(bodyAsBytes)
 	}
+
+	req.Header.Add("User-Agent", client.userAgent)
 
 	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, "")
 	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.AWSRegion, time.Now())
