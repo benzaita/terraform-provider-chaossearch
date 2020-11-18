@@ -1,6 +1,8 @@
 # Terraform Provider for ChaosSearch
 
-WIP
+This is a Terraform provider for [ChaosSearch](https://www.chaossearch.io/).
+
+This is a work-in-progress.
 
 TODO:
 
@@ -13,4 +15,5 @@ TODO:
  - [x] Implement update for resource_object_group
  - [x] Implement delete for resource_object_group
  - [x] Implement import for resource_object_group
- - [ ] 
+ - [ ] Acceptance tests
+ - [ ] CI/CD pipeline (publish to the public Terraform Registry)
