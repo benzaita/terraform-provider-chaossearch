@@ -2,6 +2,8 @@
 
 This is a Terraform provider for [ChaosSearch](https://www.chaossearch.io/).
 
+It is available in the Terraform Registry: [benzaita/chaossearch](https://registry.terraform.io/providers/benzaita/chaossearch/latest).
+
 This is a work-in-progress.
 
 TODO:
@@ -16,5 +18,5 @@ TODO:
  - [x] Implement delete for resource_object_group
  - [x] Implement import for resource_object_group
  - [ ] Acceptance tests
- - [ ] CI/CD pipeline (publish to the public Terraform Registry)
+ - [x] CI/CD pipeline (publish to the public Terraform Registry)
  - [ ] Deleting an OG that has indexes (should this even be allowed via Terraform?)

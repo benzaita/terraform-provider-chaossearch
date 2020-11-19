@@ -2,19 +2,29 @@ terraform {
   required_providers {
     chaossearch = {
       versions = ["0.2"]
-      source = "github.com/benzaita/chaossearch"
+      source = "benzaita/chaossearch"
     }
   }
 }
 
 provider "chaossearch" {}
 
-# output "itamar_test" {
-  # value = chaossearch_object_group.itamar_test
-# }
+resource "chaossearch_object_group" "my-object-group" {
+  name = "my-object-group"
+  source_bucket = "<s3 bucket name>"
+  live_events_sqs_arn ="<sqs arn>"
 
-# data "chaossearch_object_groups" "all" {}
+  filter_json = jsonencode({
+    AND = [
+      {
+        field = "key"
+        regex = ".*"
+      }
+    ]
+  })
 
-# output "all_object_groups" {
-  # value = data.chaossearch_object_groups.all.object_groups
-# }
+  compression = "gzip"
+  format = "JSON"
+
+  partition_by = "<regex>"
+}
