@@ -109,7 +109,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	resp, err := c.ReadObjectGroup(ctx, req)
 	if err != nil {
-		return diag.Errorf("Failed to read object group: ", err)
+		return diag.Errorf("Failed to read object group: %s", err)
 	}
 
 	data.Set("name", data.Id())
