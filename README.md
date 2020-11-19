@@ -17,3 +17,4 @@ TODO:
  - [x] Implement import for resource_object_group
  - [ ] Acceptance tests
  - [ ] CI/CD pipeline (publish to the public Terraform Registry)
+ - [ ] Deleting an OG that has indexes (should this even be allowed via Terraform?)
