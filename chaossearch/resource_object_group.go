@@ -35,7 +35,7 @@ func resourceObjectGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"json"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"JSON", "LOG"}, false),
 			},
 			"filter_json": {
 				Type:         schema.TypeString,
@@ -65,6 +65,13 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
+			"pattern": {
+				Type:         schema.TypeString,
+				Default:      ".*",
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsValidRegExp,
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -87,6 +94,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Compression:      data.Get("compression").(string),
 		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
 		PartitionBy:      data.Get("partition_by").(string),
+		Pattern:          data.Get("pattern").(string),
 	}
 
 	err := c.CreateObjectGroup(ctx, request)
