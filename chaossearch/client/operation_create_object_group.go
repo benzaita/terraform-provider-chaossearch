@@ -71,6 +71,11 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		body["partitionBy"] = req.PartitionBy
 	}
 
+	if req.Format == "LOG" {
+		var format = body["format"].(map[string]interface{})
+		format["pattern"] = req.Pattern
+	}
+
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err

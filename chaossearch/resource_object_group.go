@@ -3,13 +3,30 @@ package chaossearch
 import (
 	"context"
 	"log"
+	"fmt"
 	"regexp"
 	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	"github.com/gijsbers/go-pcre"
 )
+
+func stringIsValidPcre(i interface{}, k string) (warnings []string, errors []error) {
+	v, ok := i.(string)
+	if !ok {
+		errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
+		return warnings, errors
+	}
+
+	if _, err := pcre.Compile(v, 0); err != nil {
+		errors = append(errors, fmt.Errorf("%q: %s", k, err))
+	}
+
+	return warnings, errors
+}
 
 func resourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
@@ -35,7 +52,7 @@ func resourceObjectGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"json"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"JSON", "LOG"}, false),
 			},
 			"filter_json": {
 				Type:         schema.TypeString,
@@ -65,6 +82,13 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
+			"pattern": {
+				Type:         schema.TypeString,
+				Default:      ".*",
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: stringIsValidPcre,
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -87,6 +111,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Compression:      data.Get("compression").(string),
 		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
 		PartitionBy:      data.Get("partition_by").(string),
+		Pattern:          data.Get("pattern").(string),
 	}
 
 	err := c.CreateObjectGroup(ctx, request)

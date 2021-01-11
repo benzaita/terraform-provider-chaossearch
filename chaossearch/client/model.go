@@ -34,6 +34,7 @@ type CreateObjectGroupRequest struct {
 	LiveEventsSqsArn string
 	PartitionBy      string
 	SourceBucket     string
+	Pattern			 string
 }
 
 type DeleteObjectGroupRequest struct {
