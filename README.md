@@ -20,3 +20,15 @@ TODO:
  - [ ] Acceptance tests
  - [x] CI/CD pipeline (publish to the public Terraform Registry)
  - [ ] Deleting an OG that has indexes (should this even be allowed via Terraform?)
+ 
+## Contributing
+
+### How to test?
+
+The `example` directory contains an example Terraform manifest. Make sure the provider version there matches the provider version in the `Makefile`, and then run:
+
+```
+make run
+```
+
+This will install the provider locally and run Terraform in the `example` directory.
