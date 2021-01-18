@@ -35,4 +35,6 @@ This will install the provider locally and run Terraform in the `example` direct
 
 ### How to release?
 
+Update the version in the Makefile.
+
 Create a new tag of the following format: `vX.Y.Z` e.g. `v0.3.0`, and push it. Follow [this](https://github.com/benzaita/terraform-provider-chaossearch/actions?query=workflow%3Arelease) GitHub Workflow - it will push a new version to the Terraform Registry.
