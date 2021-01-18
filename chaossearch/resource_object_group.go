@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"regexp"
+	"strings"
 	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,10 +67,10 @@ func resourceObjectGroup() *schema.Resource {
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
 			"pattern": {
-				Type:         schema.TypeString,
-				Default:      ".*",
-				Optional:     true,
-				ForceNew:     true,
+				Type:     schema.TypeString,
+				Default:  ".*",
+				Optional: true,
+				ForceNew: true,
 			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
@@ -123,7 +124,16 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("filter_json", resp.FilterJSON)
 	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	data.Set("compression", resp.Compression)
+
+	// When the object in an Object Group use no compression, you need to create it with
+	// `compression = ""`. However, when querying an Object Group whose object are not
+	// compressed, the API returns `compression = "none"`. We coerce the "none" value to
+	// an empty string in order not to confuse Terraform.
+	compressionOrEmptyString := resp.Compression
+	if strings.ToLower(compressionOrEmptyString) == "none" {
+		compressionOrEmptyString = ""
+	}
+	data.Set("compression", compressionOrEmptyString)
 
 	log.Printf("WARNING - not reading PartitionBy")
 	// data.Set("partition_by", resp.PartitionBy)
