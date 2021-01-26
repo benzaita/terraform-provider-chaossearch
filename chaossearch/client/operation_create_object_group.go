@@ -40,7 +40,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"horizontal":  true,
 			"stripPrefix": true,
 		},
-		"indexRetention": 14,
+		"indexRetention": req.IndexRetention,
 		"options": map[string]interface{}{
 			"ignoreIrregular": true,
 		},

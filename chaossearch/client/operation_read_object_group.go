@@ -76,6 +76,14 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 
+	var retentionObject struct {
+		Overall int `json:"overall"`
+	}
+	if err := readJSONTagValue(tagging, "cs3.index-retention", &retentionObject); err != nil {
+		return err
+	}
+	v.IndexRetention = retentionObject.Overall
+
 	log.Printf("WARNING - not reading PartitionBy")
 	// v.PartitionBy = ""                // TODO where from?
 	// log.Fatalf("Not implemented yet")

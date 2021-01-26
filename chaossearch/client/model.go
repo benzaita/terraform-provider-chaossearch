@@ -24,6 +24,7 @@ type ReadObjectGroupResponse struct {
 	LiveEventsSqsArn string
 	PartitionBy      string
 	SourceBucket     string
+	IndexRetention   int
 }
 
 type CreateObjectGroupRequest struct {
@@ -34,7 +35,8 @@ type CreateObjectGroupRequest struct {
 	LiveEventsSqsArn string
 	PartitionBy      string
 	SourceBucket     string
-	Pattern			 string
+	Pattern          string
+	IndexRetention   int
 }
 
 type DeleteObjectGroupRequest struct {

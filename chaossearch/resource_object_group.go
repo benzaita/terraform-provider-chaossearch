@@ -72,6 +72,13 @@ func resourceObjectGroup() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"index_retention": {
+				Type:        schema.TypeInt,
+				Default:     14,
+				Description: "Number of days to keep the data before deleting it",
+				Optional:    true,
+				ForceNew:    false,
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -95,6 +102,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
 		PartitionBy:      data.Get("partition_by").(string),
 		Pattern:          data.Get("pattern").(string),
+		IndexRetention:   data.Get("index_retention").(int),
 	}
 
 	err := c.CreateObjectGroup(ctx, request)
@@ -124,6 +132,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("filter_json", resp.FilterJSON)
 	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
+	data.Set("index_retention", resp.IndexRetention)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
