@@ -79,6 +79,12 @@ func resourceObjectGroup() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 			},
+			"active": {
+				Type:        schema.TypeBool,
+				Description: "Whether the live indexing should be running or not",
+				Required:    true,
+				ForceNew:    false,
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -93,7 +99,7 @@ func resourceObjectGroup() *schema.Resource {
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	request := &client.CreateObjectGroupRequest{
+	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		Name:             data.Get("name").(string),
 		SourceBucket:     data.Get("source_bucket").(string),
 		FilterJSON:       data.Get("filter_json").(string),
@@ -105,8 +111,16 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		IndexRetention:   data.Get("index_retention").(int),
 	}
 
-	err := c.CreateObjectGroup(ctx, request)
-	if err != nil {
+	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	setActiveRequest := &client.SetActiveRequest{
+		ObjectGroupName: data.Get("name").(string),
+		Active:          data.Get("active").(bool),
+	}
+
+	if err := c.SetActive(ctx, setActiveRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -133,6 +147,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("index_retention", resp.IndexRetention)
+	data.Set("active", resp.Active)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
@@ -155,13 +170,20 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	req := &client.UpdateObjectGroupRequest{
+	setActiveRequest := &client.SetActiveRequest{
+		ObjectGroupName: data.Get("name").(string),
+		Active:          data.Get("active").(bool),
+	}
+	if err := c.SetActive(ctx, setActiveRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
 		Name:           data.Get("name").(string),
 		IndexRetention: data.Get("index_retention").(int),
 	}
 
-	err := c.UpdateObjectGroup(ctx, req)
-	if err != nil {
+	if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -171,12 +193,19 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	req := &client.DeleteObjectGroupRequest{
+	stopIndexingRequest := &client.SetActiveRequest{
+		ObjectGroupName: data.Get("name").(string),
+		Active:          false,
+	}
+	if err := c.SetActive(ctx, stopIndexingRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
 		Name: data.Get("name").(string),
 	}
 
-	err := c.DeleteObjectGroup(ctx, req)
-	if err != nil {
+	if err := c.DeleteObjectGroup(ctx, deleteObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
 

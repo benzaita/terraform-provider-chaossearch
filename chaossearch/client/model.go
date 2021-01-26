@@ -25,6 +25,7 @@ type ReadObjectGroupResponse struct {
 	PartitionBy      string
 	SourceBucket     string
 	IndexRetention   int
+	Active           bool
 }
 
 type CreateObjectGroupRequest struct {
@@ -37,6 +38,11 @@ type CreateObjectGroupRequest struct {
 	SourceBucket     string
 	Pattern          string
 	IndexRetention   int
+}
+
+type SetActiveRequest struct {
+	ObjectGroupName string
+	Active          bool
 }
 
 type DeleteObjectGroupRequest struct {
