@@ -64,7 +64,6 @@ func resourceObjectGroup() *schema.Resource {
 				Default:      "",
 				Optional:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringIsValidRegExp,
 			},
 			"pattern": {
 				Type:     schema.TypeString,
