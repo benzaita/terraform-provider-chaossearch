@@ -6,14 +6,13 @@ type Configuration struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	AWSServiceName  string
-	AWSRegion       string
+	Region       string
 }
 
 // NewConfiguration creates a default Configuration struct
 func NewConfiguration() *Configuration {
 	cfg := &Configuration{
 		AWSServiceName: "s3",
-		AWSRegion:      "eu-west-1",
 	}
 
 	return cfg
