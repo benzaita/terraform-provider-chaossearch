@@ -46,7 +46,7 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 	req.Header.Add("User-Agent", client.userAgent)
 
 	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, "")
-	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.AWSRegion, time.Now())
+	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.Region, time.Now())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to sign request: %s", err)
 	}

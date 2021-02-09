@@ -33,6 +33,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_SECRET_ACCESS_KEY", ""),
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_REGION", "eu-west-1"),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"chaossearch_object_group": resourceObjectGroup(),
@@ -48,6 +53,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	url := d.Get("url").(string)
 	accessKeyID := d.Get("access_key_id").(string)
 	secretAccessKey := d.Get("secret_access_key").(string)
+	region := d.Get("region").(string)
 
 	if url == "" {
 		return nil, diag.Errorf("Expected 'url' to be defined in provider configuration, but it was not")
@@ -58,11 +64,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	if secretAccessKey == "" {
 		return nil, diag.Errorf("Expected 'secret_access_key' to be defined in provider configuration, but it was not")
 	}
+	if region == "" {
+		return nil, diag.Errorf("Expected 'region' to be defined in provider configuration, but it was not")
+	}
 
 	config := client.NewConfiguration()
 	config.URL = url
 	config.AccessKeyID = accessKeyID
 	config.SecretAccessKey = secretAccessKey
+	config.Region = region
 
 	csClient := client.NewClient(config)
 
