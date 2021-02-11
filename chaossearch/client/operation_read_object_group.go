@@ -22,7 +22,7 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 	session, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
 		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
-		Region:           aws.String("eu-west-1"),
+		Region:           aws.String(client.config.Region),
 		S3ForcePathStyle: aws.Bool(true),
 		LogLevel:         aws.LogLevel(aws.LogOff),
 		Logger:           appLogger{},
