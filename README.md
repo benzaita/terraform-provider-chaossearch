@@ -33,6 +33,12 @@ make run
 
 This will install the provider locally and run Terraform in the `example` directory.
 
+### How to bump the version?
+
+We follow the SemVer specification for our version string. Please read [here](https://semver.org) if you are not familiar with it.
+
+To bump the version, simply bump the `VERSION` variable in the [Makefile](./Makefile). Note that this does not trigger a release -- see the "How to release" section for that.
+
 ### How to release?
 
 Update the version in the Makefile.
