@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,6 +20,49 @@ func (l appLogger) Log(args ...interface{}) {
 }
 
 func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
+	var resp ReadObjectGroupResponse
+
+	if err:= client.readAttributesFromBucketTagging(ctx, req, &resp); err !=nil {
+		return nil, err
+	}
+
+	if err:= client.readAttributesFromDatasetEndpoint(ctx, req, &resp); err !=nil {
+		return nil, err
+	}
+
+	log.Printf("ReadObjectGroupResponse: %+v", resp)
+
+	return &resp, nil
+}
+
+func (client *Client ) readAttributesFromDatasetEndpoint(ctx context.Context, req *ReadObjectGroupRequest,resp *ReadObjectGroupResponse ) error {
+	method := "GET"
+	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", client.config.URL, req.ID)
+
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
+	if err != nil {
+		return fmt.Errorf("Failed to create request: %s", err)
+	}
+
+	httpResp, err := client.signAndDo(httpReq,nil)
+	if err != nil {
+		return fmt.Errorf("Failed to %s to %s: %s", method, url, err)
+	}
+	defer httpResp.Body.Close()
+
+	var getDatasetResp struct {
+		PartitionBy string `json:"partitionBy"`
+	}
+	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
+		return fmt.Errorf("Failed to unmarshal JSON response body: %s", err)
+	}
+
+	resp.PartitionBy = getDatasetResp.PartitionBy
+
+	return nil
+}
+
+func (client *Client ) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest,resp *ReadObjectGroupResponse ) error {
 	session, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
 		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
@@ -28,7 +72,7 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 		Logger:           appLogger{},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create AWS session: %s", err)
+		return fmt.Errorf("Failed to create AWS session: %s", err)
 	}
 
 	svc := s3.New(session)
@@ -38,17 +82,14 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 
 	tagging, err := svc.GetBucketTaggingWithContext(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read bucket tagging: %s", err)
+		return fmt.Errorf("Failed to read bucket tagging: %s", err)
 	}
 
-	var resp ReadObjectGroupResponse
-	if err := mapBucketTaggingToResponse(tagging, &resp); err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal XML response body: %s", err)
+	if err := mapBucketTaggingToResponse(tagging, resp); err != nil {
+		return fmt.Errorf("Failed to unmarshal XML response body: %s", err)
 	}
 
-	log.Printf("ReadObjectGroupResponse: %+v", resp)
-
-	return &resp, nil
+	return  nil
 }
 
 func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjectGroupResponse) error {
@@ -90,9 +131,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	}
 	v.IndexRetention = retentionObject.Overall
 
-	log.Printf("WARNING - not reading PartitionBy")
-	// v.PartitionBy = ""                // TODO where from?
-	// log.Fatalf("Not implemented yet")
 	return nil
 }
 
