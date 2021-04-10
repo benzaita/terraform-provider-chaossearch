@@ -158,7 +158,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("compression", compressionOrEmptyString)
 
 	data.Set("partition_by", resp.PartitionBy)
-
+	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
 	return diags
