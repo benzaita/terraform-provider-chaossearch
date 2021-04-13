@@ -28,3 +28,8 @@ resource "chaossearch_object_group" "my-object-group" {
 
   partition_by = "<regex>"
 }
+
+resource "chaossearch_indexing_state" "my-object-group" {
+  object_group_name = chaossearch_object_group.my-object-group.name
+  active = true
+}
