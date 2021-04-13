@@ -2,7 +2,6 @@ package chaossearch
 
 import (
 	"context"
-	"log"
 	"regexp"
 	"strings"
 	"terraform-provider-chaossearch/chaossearch/client"
@@ -158,9 +157,8 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 	data.Set("compression", compressionOrEmptyString)
 
-	log.Printf("WARNING - not reading PartitionBy")
-	// data.Set("partition_by", resp.PartitionBy)
-
+	data.Set("partition_by", resp.PartitionBy)
+	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
 	return diags
