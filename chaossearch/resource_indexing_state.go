@@ -41,7 +41,7 @@ func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData,
 		Active:          data.Get("active").(bool),
 	}
 
-	if err := c.SetActive(ctx, setActiveRequest); err != nil {
+	if err := c.UpdateIndexingState(ctx, setActiveRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -67,7 +67,7 @@ func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData,
 		ObjectGroupName: data.Get("objectGroupName").(string),
 		Active:          data.Get("active").(bool),
 	}
-	if err := c.SetActive(ctx, setActiveRequest); err != nil {
+	if err := c.UpdateIndexingState(ctx, setActiveRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -81,7 +81,7 @@ func resourceIndexingStateDelete(ctx context.Context, data *schema.ResourceData,
 		ObjectGroupName: data.Get("objectGroupName").(string),
 		Active:          false,
 	}
-	if err := c.SetActive(ctx, stopIndexingRequest); err != nil {
+	if err := c.UpdateIndexingState(ctx, stopIndexingRequest); err != nil {
 		return diag.FromErr(err)
 	}
 

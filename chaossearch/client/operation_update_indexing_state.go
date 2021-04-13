@@ -8,7 +8,8 @@ import (
 	"net/http"
 )
 
-func (client *Client) SetActive(ctx context.Context, req *SetActiveRequest) error {
+// For documentation see: https://docs.chaossearch.io/reference#bucketmodel
+func (client *Client) UpdateIndexingState(ctx context.Context, req *SetActiveRequest) error {
 	method := "POST"
 	url := fmt.Sprintf("%s/Bucket/model", client.config.URL)
 
