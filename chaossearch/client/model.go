@@ -53,3 +53,23 @@ type UpdateObjectGroupRequest struct {
 	Name           string
 	IndexRetention int
 }
+
+type ReadIndexingStateRequest struct {
+	ObjectGroupName string
+}
+
+type ReadBucketMetadataResponse struct {
+	Metadata map[string]BucketMetadata `json:"Metadata"`
+}
+
+// There are other nested structures that we don't marshal here because we don't need to.
+//  Feel free to add them in the future when needed
+type BucketMetadata struct {
+	Bucket string `json:"Bucket"`
+	State  string `json:"State"`
+}
+
+type IndexingState struct {
+	ObjectGroupName string
+	Active          bool
+}
