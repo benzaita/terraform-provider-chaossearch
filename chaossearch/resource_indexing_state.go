@@ -18,7 +18,7 @@ func resourceIndexingState() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"objectGroupName": {
+			"object_group_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -37,7 +37,7 @@ func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData,
 	c := meta.(*ProviderMeta).Client
 
 	setActiveRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("objectGroupName").(string),
+		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          data.Get("active").(bool),
 	}
 
@@ -45,7 +45,7 @@ func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("objectGroupName").(string))
+	data.SetId(data.Get("object_group_name").(string))
 
 	return resourceIndexingStateRead(ctx, data, meta)
 }
@@ -56,7 +56,7 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 	c := meta.(*ProviderMeta).Client
 
 	readIndexingStateRequest := &client.ReadIndexingStateRequest{
-		ObjectGroupName: data.Get("objectGroupName").(string),
+		ObjectGroupName: data.Get("object_group_name").(string),
 	}
 
 	resp, err := c.ReadIndexingState(ctx, readIndexingStateRequest)
@@ -74,7 +74,7 @@ func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData,
 	c := meta.(*ProviderMeta).Client
 
 	setActiveRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("objectGroupName").(string),
+		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          data.Get("active").(bool),
 	}
 	if err := c.UpdateIndexingState(ctx, setActiveRequest); err != nil {
@@ -88,7 +88,7 @@ func resourceIndexingStateDelete(ctx context.Context, data *schema.ResourceData,
 	c := meta.(*ProviderMeta).Client
 
 	stopIndexingRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("objectGroupName").(string),
+		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          false,
 	}
 	if err := c.UpdateIndexingState(ctx, stopIndexingRequest); err != nil {
