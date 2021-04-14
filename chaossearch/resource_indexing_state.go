@@ -53,9 +53,19 @@ func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData,
 func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// There is no request that is similar to getting an indexing state in ChaosSearch API,
-	//  so we cannot retrieve it, therefore this function is kept for the sake of being
-	//  compliant with Terraform providers standard, but it doesn't do anything
+	c := meta.(*ProviderMeta).Client
+
+	readIndexingStateRequest := &client.ReadIndexingStateRequest{
+		ObjectGroupName: data.Get("objectGroupName").(string),
+	}
+
+	resp, err := c.ReadIndexingState(ctx, readIndexingStateRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(resp.ObjectGroupName)
+	data.Set("Active", resp.Active)
 
 	return diags
 }
