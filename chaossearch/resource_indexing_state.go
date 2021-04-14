@@ -36,12 +36,12 @@ func resourceIndexingState() *schema.Resource {
 func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	setActiveRequest := &client.SetActiveRequest{
+	updateIndexingStateRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          data.Get("active").(bool),
 	}
 
-	if err := c.UpdateIndexingState(ctx, setActiveRequest); err != nil {
+	if err := c.UpdateIndexingState(ctx, updateIndexingStateRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -65,7 +65,7 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	data.SetId(resp.ObjectGroupName)
-	data.Set("Active", resp.Active)
+	data.Set("active", resp.Active)
 
 	return diags
 }
@@ -73,11 +73,11 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	setActiveRequest := &client.SetActiveRequest{
+	updateIndexingStateRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          data.Get("active").(bool),
 	}
-	if err := c.UpdateIndexingState(ctx, setActiveRequest); err != nil {
+	if err := c.UpdateIndexingState(ctx, updateIndexingStateRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -87,7 +87,7 @@ func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData,
 func resourceIndexingStateDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	stopIndexingRequest := &client.SetActiveRequest{
+	stopIndexingRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),
 		Active:          false,
 	}

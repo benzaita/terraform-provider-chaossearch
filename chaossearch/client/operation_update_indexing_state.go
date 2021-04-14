@@ -9,11 +9,11 @@ import (
 )
 
 // For documentation see: https://docs.chaossearch.io/reference#bucketmodel
-func (client *Client) UpdateIndexingState(ctx context.Context, req *SetActiveRequest) error {
+func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexingStateRequest) error {
 	method := "POST"
 	url := fmt.Sprintf("%s/Bucket/model", client.config.URL)
 
-	bodyAsBytes, err := marshalSetActiveRequest(req)
+	bodyAsBytes, err := marshalUpdateIndexingStateRequest(req)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (client *Client) UpdateIndexingState(ctx context.Context, req *SetActiveReq
 	return nil
 }
 
-func marshalSetActiveRequest(req *SetActiveRequest) ([]byte, error) {
+func marshalUpdateIndexingStateRequest(req *UpdateIndexingStateRequest) ([]byte, error) {
 	var modelMode int
 
 	if req.Active {

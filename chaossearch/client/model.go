@@ -40,7 +40,7 @@ type CreateObjectGroupRequest struct {
 	IndexRetention   int
 }
 
-type SetActiveRequest struct {
+type UpdateIndexingStateRequest struct {
 	ObjectGroupName string
 	Active          bool
 }
