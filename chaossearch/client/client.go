@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
@@ -81,6 +82,19 @@ func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) erro
 
 	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("Failed to unmarshal XML: %s", err)
+	}
+
+	return nil
+}
+
+func (client *Client) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
+	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
+	if err != nil {
+		return fmt.Errorf("Failed to read body: %s", err)
+	}
+
+	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
+		return fmt.Errorf("Failed to unmarshal JSON: %s", err)
 	}
 
 	return nil
