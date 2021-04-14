@@ -64,10 +64,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 
-	if err := readJSONTagValue(tagging, "cs3.modeled", &v.Active); err != nil {
-		return err
-	}
-
 	var filterObject struct {
 		Type string `json:"_type"`
 	}
