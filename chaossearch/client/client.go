@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/xml"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
