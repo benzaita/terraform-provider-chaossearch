@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
@@ -93,7 +94,7 @@ func (client *Client) unmarshalJSONBody(bodyReader io.Reader, v interface{}) err
 		return fmt.Errorf("Failed to read body: %s", err)
 	}
 
-	if err :=json.Unmarshal(bodyAsBytes, v); err != nil {
+	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("Failed to unmarshal JSON: %s", err)
 	}
 

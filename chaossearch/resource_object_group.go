@@ -77,12 +77,6 @@ func resourceObjectGroup() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 			},
-			"active": {
-				Type:        schema.TypeBool,
-				Description: "Whether the live indexing should be running or not",
-				Required:    true,
-				ForceNew:    false,
-			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -113,15 +107,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	setActiveRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("name").(string),
-		Active:          data.Get("active").(bool),
-	}
-
-	if err := c.SetActive(ctx, setActiveRequest); err != nil {
-		return diag.FromErr(err)
-	}
-
 	data.SetId(data.Get("name").(string))
 
 	return resourceObjectGroupRead(ctx, data, meta)
@@ -145,7 +130,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("index_retention", resp.IndexRetention)
-	data.Set("active", resp.Active)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
@@ -167,14 +151,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
-	setActiveRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("name").(string),
-		Active:          data.Get("active").(bool),
-	}
-	if err := c.SetActive(ctx, setActiveRequest); err != nil {
-		return diag.FromErr(err)
-	}
-
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
 		Name:           data.Get("name").(string),
 		IndexRetention: data.Get("index_retention").(int),
@@ -189,14 +165,6 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
-
-	stopIndexingRequest := &client.SetActiveRequest{
-		ObjectGroupName: data.Get("name").(string),
-		Active:          false,
-	}
-	if err := c.SetActive(ctx, stopIndexingRequest); err != nil {
-		return diag.FromErr(err)
-	}
 
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
 		Name: data.Get("name").(string),

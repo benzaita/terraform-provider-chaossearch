@@ -26,7 +26,6 @@ type ReadObjectGroupResponse struct {
 	PartitionBy      string
 	SourceBucket     string
 	IndexRetention   int
-	Active           bool
 }
 
 type CreateObjectGroupRequest struct {
@@ -41,7 +40,7 @@ type CreateObjectGroupRequest struct {
 	IndexRetention   int
 }
 
-type SetActiveRequest struct {
+type UpdateIndexingStateRequest struct {
 	ObjectGroupName string
 	Active          bool
 }
@@ -53,4 +52,18 @@ type DeleteObjectGroupRequest struct {
 type UpdateObjectGroupRequest struct {
 	Name           string
 	IndexRetention int
+}
+
+type ReadIndexingStateRequest struct {
+	ObjectGroupName string
+}
+
+type readBucketMetadataRequest struct {
+	BucketName string `json:"BucketName"`
+	Stats bool `json:"Stats"`
+}
+
+type IndexingState struct {
+	ObjectGroupName string
+	Active          bool
 }
