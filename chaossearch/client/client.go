@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"encoding/json"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
