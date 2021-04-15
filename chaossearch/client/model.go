@@ -57,6 +57,11 @@ type ReadIndexingStateRequest struct {
 	ObjectGroupName string
 }
 
+type readBucketMetadataRequest struct {
+	BucketName string `json:"BucketName"`
+	Stats bool `json:"Stats"`
+}
+
 type IndexingState struct {
 	ObjectGroupName string
 	Active          bool
