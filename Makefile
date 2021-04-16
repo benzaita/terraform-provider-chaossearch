@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=benzaita
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.6.0
+VERSION=0.6.2
 OS_ARCH=darwin_amd64
 
 default: install
