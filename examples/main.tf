@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      versions = ["0.6.0"]
+      versions = ["0.6.2"]
       source = "benzaita/chaossearch"
     }
   }
