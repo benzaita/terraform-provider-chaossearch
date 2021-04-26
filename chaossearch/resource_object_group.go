@@ -59,10 +59,10 @@ func resourceObjectGroup() *schema.Resource {
 				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^arn:aws:sqs:.*`), `must be an SQS ARN: "arn:aws:sqs:..."`),
 			},
 			"partition_by": {
-				Type:         schema.TypeString,
-				Default:      "",
-				Optional:     true,
-				ForceNew:     true,
+				Type:     schema.TypeString,
+				Default:  "",
+				Optional: true,
+				ForceNew: true,
 			},
 			"pattern": {
 				Type:     schema.TypeString,
@@ -76,6 +76,16 @@ func resourceObjectGroup() *schema.Resource {
 				Description: "Number of days to keep the data before deleting it",
 				Optional:    true,
 				ForceNew:    false,
+			},
+			"column_renames": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Default:     make(map[string]string),
+				ForceNew:    true,
+				Description: "A map specifying names of columns to rename (keys) and what to rename them to (values)",
 			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
@@ -101,6 +111,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		PartitionBy:      data.Get("partition_by").(string),
 		Pattern:          data.Get("pattern").(string),
 		IndexRetention:   data.Get("index_retention").(int),
+		ColumnRenames:    data.Get("column_renames").(map[string]interface{}),
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {

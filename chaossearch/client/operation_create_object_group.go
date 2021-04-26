@@ -50,6 +50,11 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		},
 	}
 
+	if len(req.ColumnRenames) > 0 {
+		var options = body["options"].(map[string]interface{})
+		options["colRenames"] = req.ColumnRenames
+	}
+
 	if req.Compression != "" {
 		var options = body["options"].(map[string]interface{})
 		options["compression"] = req.Compression
