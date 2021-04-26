@@ -12,7 +12,7 @@ build:
 	go build -o ${BINARY}
 
 run: install
-	cd examples && terraform init && terraform apply
+	cd examples && rm -rf .terraform && terraform init && terraform apply
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
