@@ -2,8 +2,8 @@ package client
 
 import (
 	"bytes"
-	"encoding/xml"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -80,6 +80,8 @@ func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) erro
 		return fmt.Errorf("Failed to read body: %s", err)
 	}
 
+	log.Printf("Unmarshalling XML: %s\n", bodyAsBytes)
+
 	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("Failed to unmarshal XML: %s", err)
 	}
@@ -92,6 +94,8 @@ func (client *Client) unmarshalJSONBody(bodyReader io.Reader, v interface{}) err
 	if err != nil {
 		return fmt.Errorf("Failed to read body: %s", err)
 	}
+
+	log.Printf("Unmarshalling JSON: %s\n", bodyAsBytes)
 
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("Failed to unmarshal JSON: %s", err)
