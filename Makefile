@@ -4,7 +4,7 @@ NAMESPACE=benzaita
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
 VERSION=0.6.2
-OS_ARCH=darwin_amd64
+OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
 
