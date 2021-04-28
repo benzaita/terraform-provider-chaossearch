@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"log"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -22,11 +22,11 @@ func (l appLogger) Log(args ...interface{}) {
 func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
 	var resp ReadObjectGroupResponse
 
-	if err:= client.readAttributesFromBucketTagging(ctx, req, &resp); err !=nil {
+	if err := client.readAttributesFromBucketTagging(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
-	if err:= client.readAttributesFromDatasetEndpoint(ctx, req, &resp); err !=nil {
+	if err := client.readAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +35,7 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 	return &resp, nil
 }
 
-func (client *Client ) readAttributesFromDatasetEndpoint(ctx context.Context, req *ReadObjectGroupRequest,resp *ReadObjectGroupResponse ) error {
+func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
 	method := "GET"
 	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", client.config.URL, req.ID)
 
@@ -44,7 +44,7 @@ func (client *Client ) readAttributesFromDatasetEndpoint(ctx context.Context, re
 		return fmt.Errorf("Failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq,nil)
+	httpResp, err := client.signAndDo(httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("Failed to %s to %s: %s", method, url, err)
 	}
@@ -52,17 +52,21 @@ func (client *Client ) readAttributesFromDatasetEndpoint(ctx context.Context, re
 
 	var getDatasetResp struct {
 		PartitionBy string `json:"partitionBy"`
+		Options     struct {
+			ColumnRenames map[string]string `json:"colRenames"`
+		} `json:"options"`
 	}
 	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
 		return fmt.Errorf("Failed to unmarshal JSON response body: %s", err)
 	}
 
 	resp.PartitionBy = getDatasetResp.PartitionBy
+	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
 
 	return nil
 }
 
-func (client *Client ) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest,resp *ReadObjectGroupResponse ) error {
+func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
 	session, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
 		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
@@ -89,7 +93,7 @@ func (client *Client ) readAttributesFromBucketTagging(ctx context.Context, req 
 		return fmt.Errorf("Failed to unmarshal XML response body: %s", err)
 	}
 
-	return  nil
+	return nil
 }
 
 func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjectGroupResponse) error {
@@ -106,7 +110,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	}
 
 	var filterObject struct {
-		Type string `json:"_type"`
+		Type    string `json:"_type"`
 		Pattern string `json:"pattern"`
 	}
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {

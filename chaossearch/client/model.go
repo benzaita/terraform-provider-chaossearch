@@ -26,6 +26,7 @@ type ReadObjectGroupResponse struct {
 	PartitionBy      string
 	SourceBucket     string
 	IndexRetention   int
+	ColumnRenames    map[string]string
 }
 
 type CreateObjectGroupRequest struct {
@@ -38,6 +39,7 @@ type CreateObjectGroupRequest struct {
 	SourceBucket     string
 	Pattern          string
 	IndexRetention   int
+	ColumnRenames    map[string]interface{}
 }
 
 type UpdateIndexingStateRequest struct {
@@ -60,7 +62,7 @@ type ReadIndexingStateRequest struct {
 
 type readBucketMetadataRequest struct {
 	BucketName string `json:"BucketName"`
-	Stats bool `json:"Stats"`
+	Stats      bool   `json:"Stats"`
 }
 
 type IndexingState struct {

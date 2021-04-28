@@ -4,7 +4,7 @@ NAMESPACE=benzaita
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
 VERSION=0.6.2
-OS_ARCH=darwin_amd64
+OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
 
@@ -12,7 +12,7 @@ build:
 	go build -o ${BINARY}
 
 run: install
-	cd examples && terraform init && terraform apply
+	cd examples && rm -rf .terraform && terraform init && terraform apply
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
