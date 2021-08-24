@@ -39,6 +39,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"_type":       req.Format,
 			"horizontal":  true,
 			"stripPrefix": true,
+			"arrayFlattenDepth": req.ArrayFlattenDepth,
 		},
 		"indexRetention": req.IndexRetention,
 		"options": map[string]interface{}{

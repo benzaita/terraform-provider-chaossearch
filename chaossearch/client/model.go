@@ -26,6 +26,7 @@ type ReadObjectGroupResponse struct {
 	PartitionBy      string
 	SourceBucket     string
 	IndexRetention   int
+	ArrayFlattenDepth *int
 	ColumnRenames    map[string]string
 }
 
@@ -39,6 +40,7 @@ type CreateObjectGroupRequest struct {
 	SourceBucket     string
 	Pattern          string
 	IndexRetention   int
+	ArrayFlattenDepth *int
 	ColumnRenames    map[string]interface{}
 }
 

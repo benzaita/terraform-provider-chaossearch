@@ -32,6 +32,7 @@ resource "chaossearch_object_group" "my-object-group" {
   format = "JSON"
 
   partition_by = "<regex>"
+  array_flatten_depth = -1
 }
 
 resource "chaossearch_indexing_state" "my-object-group" {
