@@ -112,12 +112,14 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	var filterObject struct {
 		Type    string `json:"_type"`
 		Pattern string `json:"pattern"`
+		ArrayFlattenDepth *int `json:"arrayFlattenDepth"`
 	}
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
 	}
 	v.Format = filterObject.Type
 	v.Pattern = filterObject.Pattern
+	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
