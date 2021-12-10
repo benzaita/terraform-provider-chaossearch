@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
@@ -36,9 +37,9 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		"bucket": req.Name,
 		"source": req.SourceBucket,
 		"format": map[string]interface{}{
-			"_type":       req.Format,
-			"horizontal":  true,
-			"stripPrefix": true,
+			"_type":             req.Format,
+			"horizontal":        true,
+			"stripPrefix":       true,
 			"arrayFlattenDepth": req.ArrayFlattenDepth,
 		},
 		"indexRetention": req.IndexRetention,
@@ -54,6 +55,30 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 	if len(req.ColumnRenames) > 0 {
 		var options = body["options"].(map[string]interface{})
 		options["colRenames"] = req.ColumnRenames
+	}
+
+	if len(req.ColumnSelection) > 0 {
+		var options = body["options"].(map[string]interface{})
+		// @example
+		//"colSelection": [
+		//	{
+		//	"includes": [
+		//		"orig._originalSource",
+		//		"attrs.version",
+		//		"line.message",
+		//		"line.correlation_id",
+		//		"Timestamp"
+		//	],
+		//	"type": "whitelist"
+		//	}
+		//],
+		includesFieldAsList := strings.Split(req.ColumnSelection[0]["includes"].(string), ",")
+		options["colSelection"] = []interface{}{
+			map[string]interface{}{
+				"type":     req.ColumnSelection[0]["type"],
+				"includes": includesFieldAsList,
+			},
+		}
 	}
 
 	if req.Compression != "" {

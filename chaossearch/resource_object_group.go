@@ -78,11 +78,11 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:    false,
 			},
 			"array_flatten_depth": {
-				Type:        schema.TypeInt,
-				Default: 	 0,
-				Description: "Array flattening level. 0 - disabled, -1 - unlimited, >1 - the respective flattening level",
-				Optional:    true,
-				ForceNew:    true,
+				Type:         schema.TypeInt,
+				Default:      0,
+				Description:  "Array flattening level. 0 - disabled, -1 - unlimited, >1 - the respective flattening level",
+				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validation.IntAtLeast(-1),
 			},
 			"column_renames": {
@@ -95,6 +95,16 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "A map specifying names of columns to rename (keys) and what to rename them to (values)",
 			},
+			"column_selection": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Default:     make(map[string]interface{}),
+				ForceNew:    true,
+				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -106,36 +116,36 @@ func resourceObjectGroup() *schema.Resource {
 	}
 }
 
-
-
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
 	// We represent "null" as an int pointer to nil in the code.
-	array_flatten_tf := data.Get("array_flatten_depth").(int)
-	var array_flatten_cs *int
-	if (array_flatten_tf == -1) {
+	arrayFlattenTF := data.Get("array_flatten_depth").(int)
+	var arrayFlattenCS *int
+	if arrayFlattenTF == -1 {
 		// -1 in terraform represents "null" in the ChaosSearch API call
-		array_flatten_cs = nil
+		arrayFlattenCS = nil
 	} else {
 		// any other value is passed as is
-		array_flatten_cs = &array_flatten_tf
+		arrayFlattenCS = &arrayFlattenTF
 	}
+	columnSelection := []map[string]interface{}{data.Get("column_selection").(map[string]interface{})}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
-		Name:             data.Get("name").(string),
-		SourceBucket:     data.Get("source_bucket").(string),
-		FilterJSON:       data.Get("filter_json").(string),
-		Format:           data.Get("format").(string),
-		Compression:      data.Get("compression").(string),
-		LiveEventsSqsArn: data.Get("live_events_sqs_arn").(string),
-		PartitionBy:      data.Get("partition_by").(string),
-		Pattern:          data.Get("pattern").(string),
-		IndexRetention:   data.Get("index_retention").(int),
-		ArrayFlattenDepth: array_flatten_cs,
-		ColumnRenames:    data.Get("column_renames").(map[string]interface{}),
+		Name:              data.Get("name").(string),
+		SourceBucket:      data.Get("source_bucket").(string),
+		FilterJSON:        data.Get("filter_json").(string),
+		Format:            data.Get("format").(string),
+		Compression:       data.Get("compression").(string),
+		LiveEventsSqsArn:  data.Get("live_events_sqs_arn").(string),
+		PartitionBy:       data.Get("partition_by").(string),
+		Pattern:           data.Get("pattern").(string),
+		IndexRetention:    data.Get("index_retention").(int),
+		ArrayFlattenDepth: arrayFlattenCS,
+		ColumnRenames:     data.Get("column_renames").(map[string]interface{}),
+		ColumnSelection:   columnSelection,
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
@@ -180,10 +190,12 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
+	data.Set("column_selection", resp.ColumnSelection)
+
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
 	// We represent "null" as an int pointer to nil in the code.
-	if (resp.ArrayFlattenDepth == nil) {
+	if resp.ArrayFlattenDepth == nil {
 		data.Set("array_flatten_depth", -1)
 	} else {
 		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
