@@ -71,7 +71,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		//	"type": "whitelist"
 		//	}
 		//],
-		options["colSelection"] = req.ColumnSelection
+		options["colSelection"] = []map[string]interface{}{req.ColumnSelection}
 	}
 
 	if req.Compression != "" {

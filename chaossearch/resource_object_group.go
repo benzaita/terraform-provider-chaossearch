@@ -207,9 +207,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
-	var columnSelection *schema.Set
-	columnSelection.Add(resp.ColumnSelection[0])
-	data.Set("column_selection", columnSelection)
+	data.Set("column_selection", resp.ColumnSelection)
 
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
