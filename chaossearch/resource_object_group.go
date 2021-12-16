@@ -143,11 +143,15 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		// any other value is passed as is
 		arrayFlattenCS = &arrayFlattenTF
 	}
-	columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
-	columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
-	columnSelection := map[string]interface{}{
-		"type": columnSelectionInterface["type"].(string),
-		"includes": columnSelectionInterface["includes"].([]interface{}),
+	var columnSelection map[string]interface{}
+
+	if data.Get("column_selection").(*schema.Set).Len() > 0 {
+		columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
+		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
+		columnSelection = map[string]interface{}{
+			"type": columnSelectionInterface["type"].(string),
+			"includes": columnSelectionInterface["includes"].([]interface{}),
+		}
 	}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
