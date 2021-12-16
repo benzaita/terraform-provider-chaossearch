@@ -43,7 +43,7 @@ type CreateObjectGroupRequest struct {
 	IndexRetention    int
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]interface{}
-	ColumnSelection   []map[string]interface{}
+	ColumnSelection   map[string]interface{}
 }
 
 type UpdateIndexingStateRequest struct {

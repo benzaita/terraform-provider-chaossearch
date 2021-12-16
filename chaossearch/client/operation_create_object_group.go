@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
@@ -72,13 +71,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		//	"type": "whitelist"
 		//	}
 		//],
-		includesFieldAsList := strings.Split(req.ColumnSelection[0]["includes"].(string), ",")
-		options["colSelection"] = []interface{}{
-			map[string]interface{}{
-				"type":     req.ColumnSelection[0]["type"],
-				"includes": includesFieldAsList,
-			},
-		}
+		options["colSelection"] = req.ColumnSelection
 	}
 
 	if req.Compression != "" {

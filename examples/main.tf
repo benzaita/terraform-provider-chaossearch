@@ -34,9 +34,12 @@ resource "chaossearch_object_group" "my-object-group" {
   partition_by = "<regex>"
   array_flatten_depth = -1
 
-  column_selection = {
-    type = "whitelist",
-    includes = "host,source,attrs.systemid",
+  column_selection {
+    type = "whitelist"
+    includes = [
+      "host",
+      "source",
+    ]
   }
 }
 

@@ -96,12 +96,24 @@ func resourceObjectGroup() *schema.Resource {
 				Description: "A map specifying names of columns to rename (keys) and what to rename them to (values)",
 			},
 			"column_selection": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Type: schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:      schema.TypeString,
+							Required:  true,
+						},
+						"includes": {
+							Type:      schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Required:  true,
+						},
+					},
+
 				},
 				Optional:    true,
-				Default:     make(map[string]interface{}),
 				ForceNew:    true,
 				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
@@ -131,7 +143,12 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		// any other value is passed as is
 		arrayFlattenCS = &arrayFlattenTF
 	}
-	columnSelection := []map[string]interface{}{data.Get("column_selection").(map[string]interface{})}
+	columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
+	columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
+	columnSelection := map[string]interface{}{
+		"type": columnSelectionInterface["type"].(string),
+		"includes": columnSelectionInterface["includes"].([]interface{}),
+	}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		Name:              data.Get("name").(string),
@@ -190,7 +207,9 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
-	data.Set("column_selection", resp.ColumnSelection)
+	var columnSelection *schema.Set
+	columnSelection.Add(resp.ColumnSelection[0])
+	data.Set("column_selection", columnSelection)
 
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
