@@ -8,7 +8,6 @@ import (
 	"net/http"
 )
 
-
 // There are other nested structures that we don't marshal here because we don't need to.
 //  Feel free to add them in the future when needed
 type readBucketMetadataResponse struct {
@@ -21,7 +20,7 @@ func (client *Client) ReadIndexingState(ctx context.Context, req *ReadIndexingSt
 	method := "POST"
 	body := &readBucketMetadataRequest{
 		BucketName: req.ObjectGroupName,
-		Stats: false,
+		Stats:      false,
 	}
 
 	response, err := makeGetBucketMetadataRequest(method, client, ctx, body)
@@ -31,7 +30,7 @@ func (client *Client) ReadIndexingState(ctx context.Context, req *ReadIndexingSt
 
 	bucketMetadata := &IndexingState{
 		ObjectGroupName: response.Bucket,
-		Active: false,
+		Active:          false,
 	}
 
 	if response.State == "Active" || response.State == "Idle" {
@@ -59,7 +58,6 @@ func makeGetBucketMetadataRequest(method string, client *Client, ctx context.Con
 		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
 	defer httpResp.Body.Close()
-
 
 	var response readBucketMetadataResponse
 	err = client.unmarshalJSONBody(httpResp.Body, &response)

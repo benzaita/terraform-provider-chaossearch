@@ -6,7 +6,7 @@ type Configuration struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	AWSServiceName  string
-	Region       string
+	Region          string
 }
 
 // NewConfiguration creates a default Configuration struct

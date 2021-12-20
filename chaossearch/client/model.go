@@ -18,30 +18,32 @@ type ReadObjectGroupRequest struct {
 }
 
 type ReadObjectGroupResponse struct {
-	Compression      string
-	FilterJSON       string
-	Format           string
-	Pattern          string
-	LiveEventsSqsArn string
-	PartitionBy      string
-	SourceBucket     string
-	IndexRetention   int
+	Compression       string
+	FilterJSON        string
+	Format            string
+	Pattern           string
+	LiveEventsSqsArn  string
+	PartitionBy       string
+	SourceBucket      string
+	IndexRetention    int
 	ArrayFlattenDepth *int
-	ColumnRenames    map[string]string
+	ColumnRenames     map[string]string
+	ColumnSelection   []map[string]interface{}
 }
 
 type CreateObjectGroupRequest struct {
-	Name             string
-	Compression      string
-	FilterJSON       string
-	Format           string
-	LiveEventsSqsArn string
-	PartitionBy      string
-	SourceBucket     string
-	Pattern          string
-	IndexRetention   int
+	Name              string
+	Compression       string
+	FilterJSON        string
+	Format            string
+	LiveEventsSqsArn  string
+	PartitionBy       string
+	SourceBucket      string
+	Pattern           string
+	IndexRetention    int
 	ArrayFlattenDepth *int
-	ColumnRenames    map[string]interface{}
+	ColumnRenames     map[string]interface{}
+	ColumnSelection   map[string]interface{}
 }
 
 type UpdateIndexingStateRequest struct {

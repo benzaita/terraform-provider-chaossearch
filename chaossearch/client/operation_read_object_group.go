@@ -53,7 +53,8 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 	var getDatasetResp struct {
 		PartitionBy string `json:"partitionBy"`
 		Options     struct {
-			ColumnRenames map[string]string `json:"colRenames"`
+			ColumnRenames   map[string]string        `json:"colRenames"`
+			ColumnSelection []map[string]interface{} `json:"colSelection"`
 		} `json:"options"`
 	}
 	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
@@ -62,6 +63,7 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 
 	resp.PartitionBy = getDatasetResp.PartitionBy
 	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
+	resp.ColumnSelection = getDatasetResp.Options.ColumnSelection
 
 	return nil
 }
@@ -110,9 +112,9 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	}
 
 	var filterObject struct {
-		Type    string `json:"_type"`
-		Pattern string `json:"pattern"`
-		ArrayFlattenDepth *int `json:"arrayFlattenDepth"`
+		Type              string `json:"_type"`
+		Pattern           string `json:"pattern"`
+		ArrayFlattenDepth *int   `json:"arrayFlattenDepth"`
 	}
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
