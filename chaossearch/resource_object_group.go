@@ -100,18 +100,19 @@ func resourceObjectGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:      schema.TypeString,
-							Required:  true,
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
 						},
 						"includes": {
-							Type:      schema.TypeList,
+							Type: schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Required:  true,
+							Required: true,
+							ForceNew: true,
 						},
 					},
-
 				},
 				Optional:    true,
 				ForceNew:    true,
@@ -149,7 +150,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
 		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
 		columnSelection = map[string]interface{}{
-			"type": columnSelectionInterface["type"].(string),
+			"type":     columnSelectionInterface["type"].(string),
 			"includes": columnSelectionInterface["includes"].([]interface{}),
 		}
 	}

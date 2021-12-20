@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=benzaita
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.8.0
+VERSION=0.8.1
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
