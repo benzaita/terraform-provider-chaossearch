@@ -95,6 +95,13 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "A map specifying names of columns to rename (keys) and what to rename them to (values)",
 			},
+			"keep_original": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Description: "Works in connection with the `column_selection`, dictates whether to keep the fields filtered out by the column_selection in a separate field",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"column_selection": {
 				Type: schema.TypeSet,
 				Elem: &schema.Resource{
@@ -165,6 +172,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		PartitionBy:       data.Get("partition_by").(string),
 		Pattern:           data.Get("pattern").(string),
 		IndexRetention:    data.Get("index_retention").(int),
+		KeepOriginal:      data.Get("keep_original").(bool),
 		ArrayFlattenDepth: arrayFlattenCS,
 		ColumnRenames:     data.Get("column_renames").(map[string]interface{}),
 		ColumnSelection:   columnSelection,
