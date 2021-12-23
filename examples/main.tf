@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "0.8.0"
+      version = "0.8.2"
       source = "benzaita/chaossearch"
     }
   }
@@ -33,6 +33,8 @@ resource "chaossearch_object_group" "my-object-group" {
 
   partition_by = "<regex>"
   array_flatten_depth = -1
+
+  keep_original = true
 
   column_selection {
     type = "whitelist"
