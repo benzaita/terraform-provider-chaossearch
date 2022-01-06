@@ -112,7 +112,7 @@ func resourceObjectGroup() *schema.Resource {
 							ForceNew: true,
 						},
 						"includes": {
-							Type: schema.TypeList,
+							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -156,9 +156,12 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	if data.Get("column_selection").(*schema.Set).Len() > 0 {
 		columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
 		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
+
+		includesListOfInterfaces := columnSelectionInterface["includes"].(*schema.Set).List()
+
 		columnSelection = map[string]interface{}{
 			"type":     columnSelectionInterface["type"].(string),
-			"includes": columnSelectionInterface["includes"].([]interface{}),
+			"includes": includesListOfInterfaces,
 		}
 	}
 
