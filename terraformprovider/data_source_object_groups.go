@@ -1,4 +1,4 @@
-package chaossearch
+package main
 
 import (
 	"context"
