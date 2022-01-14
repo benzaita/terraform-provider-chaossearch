@@ -1,6 +1,7 @@
 .DS_Store
 terraform-provider-hashicups
 bin
+dist
 
 # Local .terraform directories
 **/.terraform/*

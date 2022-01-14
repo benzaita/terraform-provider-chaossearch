@@ -1,10 +1,10 @@
-package chaossearch
+package main
 
 import (
+	"chaossearch/client"
 	"context"
 	"regexp"
 	"strings"
-	"terraform-provider-chaossearch/chaossearch/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
