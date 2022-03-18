@@ -40,7 +40,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"horizontal":        true,
 			"stripPrefix":       true,
 			"arrayFlattenDepth": req.ArrayFlattenDepth,
-			"keepOriginal":  req.KeepOriginal,
+			"keepOriginal":      req.KeepOriginal,
 		},
 		"indexRetention": req.IndexRetention,
 		"options": map[string]interface{}{
@@ -59,7 +59,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 	if len(req.ColumnSelection) > 0 {
 		var options = body["options"].(map[string]interface{})
-		// @example
+		// @example: whitelist
 		//"colSelection": [
 		//	{
 		//	"includes": [
@@ -70,6 +70,18 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		//		"Timestamp"
 		//	],
 		//	"type": "whitelist"
+		//	}
+		//],
+
+		// @example: regex
+		//"colSelection": [
+		//	{
+		//	"patterns": [
+		//		"^Timestamp$"
+		//		"^line\\.meta\\..+$",
+		//	],
+		//	"include": true|false,
+		//	"type": "regex"
 		//	}
 		//],
 		options["colSelection"] = []map[string]interface{}{req.ColumnSelection}

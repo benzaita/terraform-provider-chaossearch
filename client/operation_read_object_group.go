@@ -60,6 +60,14 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
 		return fmt.Errorf("Failed to unmarshal JSON response body: %s", err)
 	}
+	if len(getDatasetResp.Options.ColumnSelection) > 0 {
+		if _, ok := getDatasetResp.Options.ColumnSelection[0]["include"]; !ok {
+			// API doesn't return "include" field for type=whitelist|blacklist, but we set it in the state.
+			// That results in a diff in configuration that causes an unchanged object group to be recreated.
+			getDatasetResp.Options.ColumnSelection[0]["include"] = false
+		}
+
+	}
 
 	resp.PartitionBy = getDatasetResp.PartitionBy
 	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
@@ -115,7 +123,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		Type              string `json:"_type"`
 		Pattern           string `json:"pattern"`
 		ArrayFlattenDepth *int   `json:"arrayFlattenDepth"`
-		KeepOriginal bool `json:"keepOriginal"`
+		KeepOriginal      bool   `json:"keepOriginal"`
 	}
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err

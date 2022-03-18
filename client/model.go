@@ -26,7 +26,7 @@ type ReadObjectGroupResponse struct {
 	PartitionBy       string
 	SourceBucket      string
 	IndexRetention    int
-	KeepOriginal    bool
+	KeepOriginal      bool
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]string
 	ColumnSelection   []map[string]interface{}
@@ -42,10 +42,11 @@ type CreateObjectGroupRequest struct {
 	SourceBucket      string
 	Pattern           string
 	IndexRetention    int
-	KeepOriginal bool
+	KeepOriginal      bool
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]interface{}
 	ColumnSelection   map[string]interface{}
+
 }
 
 type UpdateIndexingStateRequest struct {
