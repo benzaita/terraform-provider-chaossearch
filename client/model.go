@@ -30,6 +30,7 @@ type ReadObjectGroupResponse struct {
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]string
 	ColumnSelection   []map[string]interface{}
+	ColumnTypes       map[string]string
 }
 
 type CreateObjectGroupRequest struct {
@@ -46,7 +47,7 @@ type CreateObjectGroupRequest struct {
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]interface{}
 	ColumnSelection   map[string]interface{}
-
+	ColumnTypes       map[string]interface{}
 }
 
 type UpdateIndexingStateRequest struct {

@@ -144,6 +144,21 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
+			"column_types": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Default:     make(map[string]string),
+				ForceNew:    true,
+				Description: "An optional map specifying column types defined statically. Supported values are: TIMEVAL.",
+				// Field types: https://docs.chaossearch.io/docs/field-type-overrides
+				ValidateDiagFunc: validation.MapValueMatch(
+					regexp.MustCompile("^(TIMEVAL|STRING|NUMBER)$"),
+					"Columnt type must be one of TIMEVAL, STRING or NUMBER",
+				),
+			},
 
 			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
 			"description": {
@@ -232,6 +247,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		ArrayFlattenDepth: arrayFlattenCS,
 		ColumnRenames:     data.Get("column_renames").(map[string]interface{}),
 		ColumnSelection:   columnSelection,
+		ColumnTypes:       data.Get("column_types").(map[string]interface{}),
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
@@ -277,6 +293,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("source_bucket", resp.SourceBucket)
 
 	data.Set("column_selection", resp.ColumnSelection)
+	data.Set("column_types", resp.ColumnTypes)
 
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261

@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "0.8.2"
+      version = "0.10.0"
       source = "benzaita/chaossearch"
     }
   }
@@ -42,6 +42,10 @@ resource "chaossearch_object_group" "my-object-group" {
       "host",
       "source",
     ]
+  }
+
+  column_types = {
+    Timestamp = "TIMEVAL"
   }
 }
 
