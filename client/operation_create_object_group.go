@@ -57,6 +57,11 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		options["colRenames"] = req.ColumnRenames
 	}
 
+	if len(req.ColumnTypes) > 0 {
+		var options = body["options"].(map[string]interface{})
+		options["colTypes"] = req.ColumnTypes
+	}
+
 	if len(req.ColumnSelection) > 0 {
 		var options = body["options"].(map[string]interface{})
 		// @example: whitelist

@@ -55,6 +55,7 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 		Options     struct {
 			ColumnRenames   map[string]string        `json:"colRenames"`
 			ColumnSelection []map[string]interface{} `json:"colSelection"`
+			ColumnTypes     map[string]string        `json:"colTypes"`
 		} `json:"options"`
 	}
 	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
@@ -72,6 +73,7 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 	resp.PartitionBy = getDatasetResp.PartitionBy
 	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
 	resp.ColumnSelection = getDatasetResp.Options.ColumnSelection
+	resp.ColumnTypes = getDatasetResp.Options.ColumnTypes
 
 	return nil
 }
