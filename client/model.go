@@ -38,6 +38,7 @@ type CreateObjectGroupRequest struct {
 	Compression       string
 	FilterJSON        string
 	Format            string
+	Horizontal        bool
 	LiveEventsSqsArn  string
 	PartitionBy       string
 	SourceBucket      string

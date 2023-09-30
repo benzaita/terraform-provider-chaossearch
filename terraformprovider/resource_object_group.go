@@ -38,6 +38,12 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"JSON", "LOG"}, false),
 			},
+			"horizontal": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "Specifies whether flatten JSON arrays horizontally (into columns) or vertically (into rows)",
+				ForceNew:    true,
+			},
 			"filter_json": {
 				Type:         schema.TypeString,
 				Default:      `{"AND":[{"field":"key","regex":".*"}]}`,
@@ -238,6 +244,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		SourceBucket:      data.Get("source_bucket").(string),
 		FilterJSON:        data.Get("filter_json").(string),
 		Format:            data.Get("format").(string),
+		Horizontal:        data.Get("horizontal").(bool),
 		Compression:       data.Get("compression").(string),
 		LiveEventsSqsArn:  data.Get("live_events_sqs_arn").(string),
 		PartitionBy:       data.Get("partition_by").(string),

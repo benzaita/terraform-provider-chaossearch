@@ -37,7 +37,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		"source": req.SourceBucket,
 		"format": map[string]interface{}{
 			"_type":             req.Format,
-			"horizontal":        true,
+			"horizontal":        req.Horizontal,
 			"stripPrefix":       true,
 			"arrayFlattenDepth": req.ArrayFlattenDepth,
 			"keepOriginal":      req.KeepOriginal,

@@ -14,6 +14,7 @@ func TestMarshalCreateObjectGroupRequestNoFilters(t *testing.T) {
 		Compression:       "gzip",
 		FilterJSON:        `{"AND":[{"field":"key","regex":".*"}]}`,
 		Format:            "JSON",
+		Horizontal:        false,
 		LiveEventsSqsArn:  "test-sqs-arn",
 		PartitionBy:       "",
 		SourceBucket:      "test-bucket",
@@ -30,7 +31,7 @@ func TestMarshalCreateObjectGroupRequestNoFilters(t *testing.T) {
 		"format": map[string]interface{}{
 			"_type":             "JSON",
 			"arrayFlattenDepth": float64(0),
-			"horizontal":        true,
+			"horizontal":        false,
 			"keepOriginal":      true,
 			"stripPrefix":       true,
 		},
