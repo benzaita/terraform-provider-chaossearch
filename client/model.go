@@ -21,6 +21,7 @@ type ReadObjectGroupResponse struct {
 	Compression       string
 	FilterJSON        string
 	Format            string
+	Horizontal        bool
 	Pattern           string
 	LiveEventsSqsArn  string
 	PartitionBy       string

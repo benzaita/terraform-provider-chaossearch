@@ -126,6 +126,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		Pattern           string `json:"pattern"`
 		ArrayFlattenDepth *int   `json:"arrayFlattenDepth"`
 		KeepOriginal      bool   `json:"keepOriginal"`
+		Horizontal        bool   `json:"horizontal"`
 	}
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
@@ -134,6 +135,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	v.Pattern = filterObject.Pattern
 	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 	v.KeepOriginal = filterObject.KeepOriginal
+	v.Horizontal = filterObject.Horizontal
 
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err

@@ -282,6 +282,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("name", data.Id())
 	data.Set("filter_json", resp.FilterJSON)
 	data.Set("format", resp.Format)
+	data.Set("horizontal", resp.Horizontal)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("index_retention", resp.IndexRetention)
 
