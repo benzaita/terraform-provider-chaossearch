@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=benzaita
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.11.2
+VERSION=0.12.0
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
@@ -16,11 +16,13 @@ run: install
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
+	GOOS=darwin GOARCH=arm64 go build -o ./bin/${BINARY}_${VERSION}_darwin_arm64
 #	GOOS=freebsd GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_freebsd_386
 #	GOOS=freebsd GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_freebsd_amd64
 #	GOOS=freebsd GOARCH=arm go build -o ./bin/${BINARY}_${VERSION}_freebsd_arm
 	GOOS=linux GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_linux_386
 	GOOS=linux GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_linux_amd64
+	GOOS=linux GOARCH=arm64 go build -o ./bin/${BINARY}_${VERSION}_linux_arm64
 #	GOOS=linux GOARCH=arm go build -o ./bin/${BINARY}_${VERSION}_linux_arm
 #	GOOS=openbsd GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_openbsd_386
 #	GOOS=openbsd GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_openbsd_amd64
