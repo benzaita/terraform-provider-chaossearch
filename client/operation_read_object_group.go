@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -17,6 +18,49 @@ type appLogger struct{}
 
 func (l appLogger) Log(args ...interface{}) {
 	log.Printf("AWS: %+v", args...)
+}
+
+type InputFilter struct {
+    AND []struct {
+        Field string `json:"field"`
+        Regex struct {
+            Pattern string `json:"pattern"`
+            Strict  bool   `json:"strict"`
+        } `json:"regex"`
+    } `json:"AND"`
+}
+
+type DesiredFilter struct {
+    AND []struct {
+        Field string `json:"field"`
+        Regex string `json:"regex"`
+    } `json:"AND"`
+}
+
+func ConvertFilterJSON(input string) (string, error) {
+    var inputFilter InputFilter
+    err := json.Unmarshal([]byte(input), &inputFilter)
+    if err != nil {
+        return "", err
+    }
+
+    var desiredFilter DesiredFilter
+    for _, item := range inputFilter.AND {
+        desiredFilter.AND = append(desiredFilter.AND, struct {
+            Field string "json:\"field\""
+            Regex string "json:\"regex\""
+        }{
+            Field: item.Field,
+            Regex: item.Regex.Pattern,
+        })
+    }
+
+    output, err := json.Marshal(desiredFilter)
+    if err != nil {
+        return "", err
+    }
+
+    return string(output), nil
 }
 
 func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
@@ -139,6 +183,23 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
+	}
+
+	// QUICKFIX
+	// https://klarna.atlassian.net/browse/OX-1168
+	// until ChaosSearch fixes this, this workaround converts back the filter_json into the original format!
+	// For example:
+	//     `{"AND":[{"field":"key","regex":{"pattern":".*","strict":true}}]}`
+	// is converted back into
+	//     `{"AND":[{"field":"key","regex":".*"}]}`
+	needle := "pattern"
+	inputFilterJSON := v.FilterJSON
+	if strings.Contains(inputFilterJSON, needle) {
+		desiredFilterJSON, err := ConvertFilterJSON(inputFilterJSON)
+		if err != nil {
+	        return err
+	    }
+	    v.FilterJSON = desiredFilterJSON
 	}
 
 	var retentionObject struct {
