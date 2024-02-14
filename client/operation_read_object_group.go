@@ -19,7 +19,8 @@ func (l appLogger) Log(args ...interface{}) {
 	log.Printf("AWS: %+v", args...)
 }
 
-// processFilterJSON takes a JSON string as input, checks the structure of the "regex" key,
+// BUG: ChaosSearch breaking API change now uses two representations of "regex", one as an object, the other as a string.
+// The function `processFilterJSON` takes a JSON string as input, checks the structure of the "regex" key,
 // and returns a modified JSON string according to the specified rules.
 // For example:
 //     `{"AND":[{"field":"key","regex":{"pattern":".*","strict":true}}]}`
