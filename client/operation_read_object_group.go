@@ -39,11 +39,16 @@ func recoverFilterJSON(input string) (string, error) {
         regex := entry["regex"]                // Access the "regex" key.
 
         // Check the type of the "regex" key.
-        switch regex.(type) {
+        switch regexValue := regex.(type) {
         case map[string]interface{}:
-            // If "regex" is a map, set it to the value of the "pattern" key.
-            regexMap := regex.(map[string]interface{})
-            entry["regex"] = regexMap["pattern"]
+            // If "regex" is a map, check if the "strict" key is true.
+            if strict, ok := regexValue["strict"].(bool); ok && strict {
+                // If "strict" is true, set "regex" to the value of the "pattern" key.
+                entry["regex"] = regexValue["pattern"]
+            } else {
+                // If "strict" is not true, return an error.
+                return "", fmt.Errorf("strict key is not true")
+            }
         case string:
             // If "regex" is a string, no action is needed.
         default:
