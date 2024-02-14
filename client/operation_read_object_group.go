@@ -20,13 +20,13 @@ func (l appLogger) Log(args ...interface{}) {
 }
 
 // BUG: ChaosSearch breaking API change now uses two representations of "regex", one as an object, the other as a string.
-// The function `processFilterJSON` takes a JSON string as input, checks the structure of the "regex" key,
+// The function `recoverFilterJSON` takes a JSON string as input, checks the structure of the "regex" key,
 // and returns a modified JSON string according to the specified rules.
 // For example:
 //     `{"AND":[{"field":"key","regex":{"pattern":".*","strict":true}}]}`
 // is converted back into
 //     `{"AND":[{"field":"key","regex":".*"}]}`
-func processFilterJSON(input string) (string, error) {
+func recoverFilterJSON(input string) (string, error) {
     // Unmarshal the input JSON string into a map structure.
     var data map[string]interface{}
     if err := json.Unmarshal([]byte(input), &data); err != nil {
@@ -187,8 +187,9 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 
 	// NOTE: this is to work around a non-versioned breaking API change in ChaosSearch.
 	// The API might return a slightly modified JSON string.
+	// Here, we recover the "original" format in case that happens.
 	inputFilterJSON := v.FilterJSON
-	outputJSON, err := processFilterJSON(inputFilterJSON)
+	outputJSON, err := recoverFilterJSON(inputFilterJSON)
     if err != nil {
         return err
     } else {
