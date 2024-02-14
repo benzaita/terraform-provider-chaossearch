@@ -19,6 +19,48 @@ func (l appLogger) Log(args ...interface{}) {
 	log.Printf("AWS: %+v", args...)
 }
 
+// processFilterJSON takes a JSON string as input, checks the structure of the "regex" key,
+// and returns a modified JSON string according to the specified rules.
+// For example:
+//     `{"AND":[{"field":"key","regex":{"pattern":".*","strict":true}}]}`
+// is converted back into
+//     `{"AND":[{"field":"key","regex":".*"}]}`
+func processFilterJSON(input string) (string, error) {
+    // Unmarshal the input JSON string into a map structure.
+    var data map[string]interface{}
+    if err := json.Unmarshal([]byte(input), &data); err != nil {
+        return "", err // Return an error if JSON is invalid.
+    }
+
+    // Iterate over the "AND" array in the JSON structure.
+    for _, item := range data["AND"].([]interface{}) {
+        entry := item.(map[string]interface{}) // Cast to a map.
+        regex := entry["regex"]                // Access the "regex" key.
+
+        // Check the type of the "regex" key.
+        switch regex.(type) {
+        case map[string]interface{}:
+            // If "regex" is a map, set it to the value of the "pattern" key.
+            regexMap := regex.(map[string]interface{})
+            entry["regex"] = regexMap["pattern"]
+        case string:
+            // If "regex" is a string, no action is needed.
+        default:
+            // Return an error if "regex" is neither a string nor a map.
+            return "", fmt.Errorf("unexpected type for regex key")
+        }
+    }
+
+    // Marshal the modified map structure back into a JSON string.
+    outputBytes, err := json.Marshal(data)
+    if err != nil {
+        return "", err // Return an error if marshaling fails.
+    }
+
+    // Return the modified JSON string.
+    return string(outputBytes), nil
+}
+
 func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
 	var resp ReadObjectGroupResponse
 
@@ -140,6 +182,17 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
 	}
+
+
+	// NOTE: this is to work around a non-versioned breaking API change in ChaosSearch.
+	// The API might return a slightly modified JSON string.
+	inputFilterJSON := v.FilterJSON
+	outputJSON, err := processFilterJSON(inputFilterJSON)
+    if err != nil {
+        return err
+    } else {
+        v.FilterJSON = outputJSON
+    }
 
 	var retentionObject struct {
 		Overall int `json:"overall"`
