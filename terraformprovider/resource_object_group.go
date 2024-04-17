@@ -285,6 +285,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("horizontal", resp.Horizontal)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("index_retention", resp.IndexRetention)
+	data.Set("keep_original", resp.KeepOriginal)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
@@ -300,6 +301,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
+	data.Set("column_renames", resp.ColumnRenames)
 	data.Set("column_selection", resp.ColumnSelection)
 	data.Set("column_types", resp.ColumnTypes)
 
